@@ -39,56 +39,47 @@ Swagger: Swagger được cấu hình sẵn trong dự án. Không cần cài th
 
 Config S3 Service trên AWS
 
-Bucket policy Thay bucket-name bằng bucket của bạn
+### Bucket Policy
 
+Thay `bucket-name` bằng tên bucket của bạn.
+
+```json
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "Statement1",
-            "Effect": "Allow",
-            "Principal": "*",
-            "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::<bucket-name>/public/*"
-        },
-        {
-            "Sid": "Statement2",
-            "Effect": "Allow",
-            "Principal": "*",
-            "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::<bucket-name>/company-logos/*"
-        },
-        {
-            "Sid": "Statement3",
-            "Effect": "Allow",
-            "Principal": "*",
-            "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::<bucket-name>/avatar/*"
-        }
-    ]
-}
-CROS Config
-
-[
+  "Version": "2012-10-17",
+  "Statement": [
     {
-        "AllowedHeaders": [
-            "*"
-        ],
-        "AllowedMethods": [
-            "GET",
-            "HEAD",
-            "PUT",
-            "POST",
-            "DELETE"
-        ],
-        "AllowedOrigins": [
-            "*"
-        ],
-        "ExposeHeaders": [
-            "ETag",
-            "Content-Length"
-        ]
+      "Sid": "Statement1",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::bucket-name/public/*"
+    },
+    {
+      "Sid": "Statement2",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::bucket-name/company-logos/*"
+    },
+    {
+      "Sid": "Statement3",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::bucket-name/avatar/*"
     }
+  ]
+}
+### CORS Configuration
+
+```json
+[
+  {
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["GET", "HEAD", "PUT", "POST", "DELETE"],
+    "AllowedOrigins": ["*"],
+    "ExposeHeaders": ["ETag", "Content-Length"]
+  }
 ]
 Block public access
 
