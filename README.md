@@ -88,3 +88,55 @@ Bỏ chọn hai dòng sau:
 Block public access to buckets and objects granted through new public bucket or access point policies
 Block public and cross-account access to buckets and objects through any public bucket or access point policies
 ✔ Giữ nguyên hai dòng ACL được check để bảo mật tốt hơn (nếu không dùng ACL).
+
+Config S3 Service trên AWS
+
+### Bucket Policy
+
+Thay `bucket-name` bằng tên bucket của bạn.
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Statement1",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::bucket-name/public/*"
+    },
+    {
+      "Sid": "Statement2",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::bucket-name/company-logos/*"
+    },
+    {
+      "Sid": "Statement3",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::bucket-name/avatar/*"
+    }
+  ]
+}
+### CORS Configuration
+
+```json
+[
+  {
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["GET", "HEAD", "PUT", "POST", "DELETE"],
+    "AllowedOrigins": ["*"],
+    "ExposeHeaders": ["ETag", "Content-Length"]
+  }
+]
+Block public access
+
+Bỏ chọn hai dòng sau:
+
+Block public access to buckets and objects granted through new public bucket or access point policies
+Block public and cross-account access to buckets and objects through any public bucket or access point policies
+✔ Giữ nguyên hai dòng ACL được check để bảo mật tốt hơn (nếu không dùng ACL).
