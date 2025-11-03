@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -38,12 +39,25 @@ public interface JobRepository extends
 
     List<Job> findDistinctTop3BySkills_NameInOrderByCreatedAtDesc(List<String> skillNames);
 
-    @Query("SELECT COUNT(j) FROM Job j WHERE j.active = true AND j.endDate > :atTime")
-    long countActiveJobs(@Param("atTime") Instant atTime);
-
-    // Các method khác
-    long countByCreatedAtBetween(Instant start, Instant end);
-
-    @Query("SELECT COUNT(j) FROM Job j WHERE j.createdAt BETWEEN :start AND :end AND j.active = true")
-    long countByCreatedAtBetweenAndActiveTrue(@Param("start") Instant start, @Param("end") Instant end);
+//    @Query("SELECT COUNT(j) FROM Job j WHERE j.active = true AND j.endDate > :atTime")
+//    long countActiveJobs(@Param("atTime") Instant atTime);
+//
+//    // Các method khác
+//    long countByCreatedAtBetween(Instant start, Instant end);
+//
+//    @Query("SELECT COUNT(j) FROM Job j WHERE j.createdAt BETWEEN :start AND :end AND j.active = true")
+//    long countByCreatedAtBetweenAndActiveTrue(@Param("start") Instant start, @Param("end") Instant end);
+//
+//
+//    Long countByEndDateAfter(LocalDateTime date);
+//    Long countByEndDateBefore(LocalDateTime date);
+//    Long countByCreatedAtAfter(LocalDateTime date);
+//    Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+//    Long countByLevel(String level);
+//
+//    @Query("SELECT j.id, j.name, c.name, COUNT(r) " +
+//            "FROM Job j JOIN j.company c JOIN Resume r ON r.job.id = j.id " +
+//            "GROUP BY j.id, j.name, c.name " +
+//            "ORDER BY COUNT(r) DESC")
+//    List<Object[]> findTopJobsByResumeCount(int limit);
 }

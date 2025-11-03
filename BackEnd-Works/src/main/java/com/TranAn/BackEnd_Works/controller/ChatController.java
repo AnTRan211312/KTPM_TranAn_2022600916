@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 @Tag(name = "AI Chat", description = "API quản lý chat với AI")
 @RestController
@@ -66,6 +67,23 @@ public class ChatController {
     }
 
     // ✨ CẬP NHẬT: Trả về thông tin chi tiết của tất cả sessions
+    @PostMapping("/chat-sessions")
+    @ApiMessage(value = "Tạo session chat mới thành công")
+    @PreAuthorize("hasAuthority('POST /api/chat-message')")
+    @Operation(
+            summary = "Tạo session chat mới",
+            description = "Yêu cầu quyền: <b>POST /api/chat-message</b>. " +
+                    "Tạo một session chat mới và trả về sessionId để sử dụng khi gửi tin nhắn."
+    )
+    public ResponseEntity<Map<String, String>> createSession(Authentication authentication) {
+        String userEmail = authentication.getName();
+        String sessionId = chatService.createSession(userEmail);
+        Map<String, String> response = new HashMap<>();
+        response.put("sessionId", sessionId);
+        response.put("message", "Session created successfully");
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/chat-sessions")
     @ApiMessage(value = "Lấy danh sách sessions thành công")
     @PreAuthorize("hasAuthority('GET /api/chat-sessions')")

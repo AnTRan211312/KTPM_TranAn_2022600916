@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -246,6 +247,14 @@ public class ChatServiceImpl implements ChatService {
         }
 
         return sessions;
+    }
+
+    @Override
+    public String createSession(String userEmail) {
+        // Tạo sessionId mới bằng UUID
+        String sessionId = UUID.randomUUID().toString();
+        log.info("Created new chat session {} for user {}", sessionId, userEmail);
+        return sessionId;
     }
 
     // Helper: Cắt message quá dài

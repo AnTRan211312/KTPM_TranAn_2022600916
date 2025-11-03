@@ -2,6 +2,7 @@ package com.TranAn.BackEnd_Works.model;
 
 import com.TranAn.BackEnd_Works.model.common.BaseEntity;
 import com.TranAn.BackEnd_Works.model.constant.MessageRole;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,6 +26,7 @@ public class ChatMessage extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @ToString.Exclude
+    @JsonIgnoreProperties({"company", "role", "resumes", "password"})
     private User user;
 
     @Column(name = "session_id", nullable = false, length = 100)

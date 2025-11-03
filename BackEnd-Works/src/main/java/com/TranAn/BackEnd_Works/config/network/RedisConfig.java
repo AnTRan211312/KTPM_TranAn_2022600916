@@ -15,6 +15,7 @@ import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -110,12 +111,12 @@ public class RedisConfig {
         template.setHashKeySerializer(new StringRedisSerializer());
 
         // VALUE - Serialize List<ChatMessage> thành JSON
+        // Sử dụng GenericJackson2JsonRedisSerializer để giữ được generic type
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-
-        // Sử dụng Jackson2JsonRedisSerializer cho List
-        Jackson2JsonRedisSerializer<List> valueSerializer =
-                new Jackson2JsonRedisSerializer<>(objectMapper, List.class);
+        // Disable tính năng tự động phát hiện properties để tránh serialize lazy loaded entities
+        objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        GenericJackson2JsonRedisSerializer valueSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         template.setValueSerializer(valueSerializer);
         template.setHashValueSerializer(valueSerializer);

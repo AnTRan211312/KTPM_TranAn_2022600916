@@ -36,4 +36,4 @@ build/
 # Thêm dòng này vào cuối file .gitignore của bạn
 # Loại trừ các file cấu hình chứa thông tin nhạy cảm
 # Loại trừ các file cấu hình chứa thông tin nhạy cảm
-/BackEnd-Works/src/main/resources/application_secret.properties
+**/src/main/resources/application_secret.properties

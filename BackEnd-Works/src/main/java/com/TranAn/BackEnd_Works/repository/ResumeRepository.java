@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 
@@ -53,10 +54,14 @@ public interface ResumeRepository extends
     Optional<Resume> findByUserEmailAndId(String email, Long id);
 
 
-    long countByStatus(ResumeStatus status);
-
-    @Query("SELECT COUNT(r) FROM Resume r WHERE r.createdAt >= :from AND r.createdAt < :to")
-    long countResumesBetween(Instant from, Instant to);
-
-    long countByCreatedAtBetween(Instant startLastMonth, Instant endLastMonth);
+//    long countByStatus(ResumeStatus status);
+//
+//    @Query("SELECT COUNT(r) FROM Resume r WHERE r.createdAt >= :from AND r.createdAt < :to")
+//    long countResumesBetween(Instant from, Instant to);
+//
+//    long countByCreatedAtBetween(Instant startLastMonth, Instant endLastMonth);
+//
+//
+//    Long countByCreatedAtAfter(LocalDateTime date);
+//    Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }

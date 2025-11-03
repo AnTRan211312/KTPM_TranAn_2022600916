@@ -37,4 +37,9 @@ public interface ChatService {
      * Get all chat sessions for user with detailed information
      */
     List<ChatSessionDto> getAllSessions(String userEmail);
+
+    /**
+     * Create a new chat session and return the sessionId
+     */
+    String createSession(String userEmail);
 }
