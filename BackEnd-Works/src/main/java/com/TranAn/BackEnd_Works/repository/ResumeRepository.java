@@ -8,6 +8,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -53,15 +54,12 @@ public interface ResumeRepository extends
 
     Optional<Resume> findByUserEmailAndId(String email, Long id);
 
+    @Query("SELECT COUNT(r) FROM Resume r WHERE r.status = :status")
+    Long countByStatus(@Param("status") ResumeStatus status);
 
-//    long countByStatus(ResumeStatus status);
-//
-//    @Query("SELECT COUNT(r) FROM Resume r WHERE r.createdAt >= :from AND r.createdAt < :to")
-//    long countResumesBetween(Instant from, Instant to);
-//
-//    long countByCreatedAtBetween(Instant startLastMonth, Instant endLastMonth);
-//
-//
-//    Long countByCreatedAtAfter(LocalDateTime date);
-//    Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+    @Query("SELECT COUNT(r) FROM Resume r WHERE r.createdAt >= :start")
+    Long countByCreatedAtAfter(@Param("start") Instant start);
+
+    @Query("SELECT COUNT(r) FROM Resume r WHERE r.createdAt >= :start AND r.createdAt < :end")
+    Long countByCreatedAtBetween(@Param("start") Instant start, @Param("end") Instant end);
 }

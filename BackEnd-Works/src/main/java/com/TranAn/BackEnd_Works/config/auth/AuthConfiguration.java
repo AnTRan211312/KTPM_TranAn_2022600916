@@ -23,7 +23,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
 
 
 @Configuration

@@ -22,15 +22,15 @@ import java.util.HashMap;
 @Tag(name = "AI Chat", description = "API quản lý chat với AI")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping()
 public class ChatController {
 
     private final ChatService chatService;
 
     @PostMapping("/chat-message")
     @ApiMessage(value = "Gửi tin nhắn thành công")
-    @PreAuthorize("hasAuthority('POST /api/chat-message')")
-    @Operation(summary = "Gửi tin nhắn tới AI", description = "Yêu cầu quyền: <b>POST /api/chat-message</b>")
+    @PreAuthorize("hasAuthority('POST /chat-message')")
+    @Operation(summary = "Gửi tin nhắn tới AI", description = "Yêu cầu quyền: <b>POST /chat-message</b>")
     public ResponseEntity<String> chatMessage(
             @Valid @RequestBody ChatRequest request,
             Authentication authentication) {
@@ -42,7 +42,7 @@ public class ChatController {
 
     @GetMapping("/chat-history/{sessionId}")
     @ApiMessage(value = "Lấy lịch sử chat thành công")
-    @PreAuthorize("hasAuthority('GET /api/chat-history')")
+    @PreAuthorize("hasAuthority('GET /chat-history')")
     @Operation(summary = "Lấy lịch sử chat theo sessionId")
     public ResponseEntity<List<ChatMessageDto>> getChatHistory(
             @PathVariable String sessionId,
@@ -55,7 +55,7 @@ public class ChatController {
 
     @DeleteMapping("/chat-history/{sessionId}")
     @ApiMessage(value = "Xóa lịch sử chat thành công")
-    @PreAuthorize("hasAuthority('DELETE /api/chat-history')")
+    @PreAuthorize("hasAuthority('DELETE /chat-history')")
     @Operation(summary = "Xóa lịch sử chat")
     public ResponseEntity<Void> clearChatHistory(
             @PathVariable String sessionId,
@@ -69,10 +69,10 @@ public class ChatController {
     // ✨ CẬP NHẬT: Trả về thông tin chi tiết của tất cả sessions
     @PostMapping("/chat-sessions")
     @ApiMessage(value = "Tạo session chat mới thành công")
-    @PreAuthorize("hasAuthority('POST /api/chat-message')")
+    @PreAuthorize("hasAuthority('POST /chat-message')")
     @Operation(
             summary = "Tạo session chat mới",
-            description = "Yêu cầu quyền: <b>POST /api/chat-message</b>. " +
+            description = "Yêu cầu quyền: <b>POST /chat-message</b>. " +
                     "Tạo một session chat mới và trả về sessionId để sử dụng khi gửi tin nhắn."
     )
     public ResponseEntity<Map<String, String>> createSession(Authentication authentication) {
@@ -86,10 +86,10 @@ public class ChatController {
 
     @GetMapping("/chat-sessions")
     @ApiMessage(value = "Lấy danh sách sessions thành công")
-    @PreAuthorize("hasAuthority('GET /api/chat-sessions')")
+    @PreAuthorize("hasAuthority('GET /chat-sessions')")
     @Operation(
             summary = "Lấy tất cả chat sessions của user với thông tin chi tiết",
-            description = "Yêu cầu quyền: <b>GET /api/chat-sessions</b>. " +
+            description = "Yêu cầu quyền: <b>GET /chat-sessions</b>. " +
                     "Trả về danh sách sessions với message đầu, message cuối, số lượng tin nhắn và thời gian."
     )
     public ResponseEntity<List<ChatSessionDto>> getAllSessions(Authentication authentication) {
@@ -100,7 +100,7 @@ public class ChatController {
 
     @GetMapping("/chat-session/{sessionId}/info")
     @ApiMessage(value = "Lấy thông tin session thành công")
-    @PreAuthorize("hasAuthority('GET /api/chat-session')")
+    @PreAuthorize("hasAuthority('GET /chat-session')")
     @Operation(summary = "Lấy thông tin cơ bản của session chat")
     public ResponseEntity<Map<String, Object>> getSessionInfo(
             @PathVariable String sessionId,

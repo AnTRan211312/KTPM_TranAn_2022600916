@@ -16,23 +16,22 @@ import java.util.List;
 public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpecificationExecutor<Company> {
 
     Company findByOwnerEmail(String email);
-//    long countByCreatedAtBetween(Instant start, Instant end);
-//
-//
-//    Long countByCreatedAtAfter(LocalDateTime date);
-//
-//    @Query("SELECT COUNT(DISTINCT c) FROM Company c JOIN Job j ON j.company.id = c.id WHERE j.endDate > :now")
-//    Long countCompaniesWithActiveJobs(@Param("now") LocalDateTime now);
-//
-//    @Query("SELECT c.id, c.name, COUNT(j) " +
-//            "FROM Company c LEFT JOIN Job j ON j.company.id = c.id " +
-//            "GROUP BY c.id, c.name " +
-//            "ORDER BY COUNT(j) DESC")
-//    List<Object[]> findTopCompaniesByJobCount(int limit);
-//
-//    @Query("SELECT c.id, c.name, COUNT(r) " +
-//            "FROM Company c JOIN Job j ON j.company.id = c.id JOIN Resume r ON r.job.id = j.id " +
-//            "GROUP BY c.id, c.name " +
-//            "ORDER BY COUNT(r) DESC")
-//    List<Object[]> findTopCompaniesByResumeCount(int limit);
+
+    @Query("SELECT COUNT(c) FROM Company c WHERE c.createdAt >= :start")
+    Long countByCreatedAtAfter(@Param("start") Instant start);
+
+    @Query("SELECT COUNT(DISTINCT c) FROM Company c JOIN c.jobs j WHERE j.endDate > :now AND j.active = true")
+    Long countCompaniesWithActiveJobs(@Param("now") Instant now);
+
+    @Query("SELECT c.id, c.name, COUNT(j) " +
+            "FROM Company c LEFT JOIN c.jobs j " +
+            "GROUP BY c.id, c.name " +
+            "ORDER BY COUNT(j) DESC")
+    List<Object[]> findTopCompaniesByJobCount();
+
+    @Query("SELECT c.id, c.name, COUNT(r) " +
+            "FROM Company c JOIN c.jobs j LEFT JOIN j.resumes r " +
+            "GROUP BY c.id, c.name " +
+            "ORDER BY COUNT(r) DESC")
+    List<Object[]> findTopCompaniesByResumeCount();
 }

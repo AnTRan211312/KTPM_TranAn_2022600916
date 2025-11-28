@@ -201,8 +201,8 @@ public class ResumeServiceImpl implements ResumeService {
             String newKey = generateKey(resume.getEmail(), resume.getId(), resume.getVersion());
 
             s3Service.deleteFileByKey(resume.getFileKey());
-            s3Service.uploadFile(pdfFile, newKey, false);
-            resume.setFileKey(newKey);
+            String uploadedKey = s3Service.uploadFile(pdfFile, newKey, false);
+            resume.setFileKey(uploadedKey);
         } else throw new EntityNotFoundException("Không tìm thấy tệp pdf");
 
         resumeRepository.save(resume);
@@ -375,7 +375,9 @@ public class ResumeServiceImpl implements ResumeService {
         ResumeForDisplayResponseDto.Company company = new ResumeForDisplayResponseDto.Company(
                 resume.getJob().getCompany().getId(),
                 resume.getJob().getCompany().getName(),
-                resume.getJob().getCompany().getCompanyLogo().getLogoUrl()
+                resume.getJob().getCompany().getCompanyLogo() != null 
+                    ? resume.getJob().getCompany().getCompanyLogo().getLogoUrl() 
+                    : null
         );
         resumeForDisplayResponseDto.setCompany(company);
 

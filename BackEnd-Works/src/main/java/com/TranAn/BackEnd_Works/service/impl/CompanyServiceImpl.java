@@ -247,7 +247,8 @@ public class CompanyServiceImpl implements CompanyService {
         if (user.getCompany() == null)
             throw new EntityNotFoundException("Người dùng không có công ty");
 
-        if (!Objects.equals(user.getCompany().getOwner().getId(), user.getId()))
+        if (user.getCompany().getOwner() == null || 
+            !Objects.equals(user.getCompany().getOwner().getId(), user.getId()))
             throw new AccessDeniedException("Không có quyền truy cập");
 
         String emailRecruiter = recruiterRequestDto.getEmail();
@@ -270,18 +271,35 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy công ty"));
 
+        // 1. Detach users from company
         userRepository.detachUsersFromCompany(company);
 
+        // 2. Set owner to null để tránh constraint violation
+        if (company.getOwner() != null) {
+            User owner = company.getOwner();
+            owner.setCompany(null);
+            userRepository.save(owner);
+        }
+
+        // 3. Xóa logo
         if (company.getCompanyLogo() != null) {
             String logoUrl = company.getCompanyLogo().getLogoUrl();
             s3Service.deleteFileByUrl(logoUrl);
             companyLogoRepository.delete(company.getCompanyLogo());
         }
 
-        if (company.getJobs() != null)
+        // 4. QUAN TRỌNG: Set company = null cho tất cả jobs TRƯỚC khi xóa
+        // Điều này tránh TransientObjectException khi JobService.saveAndFlush()
+        if (company.getJobs() != null && !company.getJobs().isEmpty()) {
+            company.getJobs().forEach(job -> {
+                job.setCompany(null);
+                jobRepository.save(job); // Save để detach relationship
+            });
+            // Sau đó mới xóa jobs (sẽ cleanup resumes và skills)
             company.getJobs().forEach(job -> jobService.deleteJobById(job.getId()));
+        }
 
-
+        // 5. Cuối cùng mới xóa company
         companyRepository.delete(company);
         return mapToResponseDto(company);
     }

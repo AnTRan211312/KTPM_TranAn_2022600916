@@ -154,7 +154,8 @@ public class JobServiceImpl implements JobService {
                     .findByEmail(email)
                     .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng"));
 
-            if (!user.getCompany().getId().equals(job.getCompany().getId()))
+            if (user.getCompany() == null || job.getCompany() == null || 
+                !user.getCompany().getId().equals(job.getCompany().getId()))
                 throw new AccessDeniedException("Không có quyền truy cập");
         } else if (
                 jobRequestDto.getCompany() != null && !Objects.equals(jobRequestDto.getCompany().getId(), job.getCompany().getId())

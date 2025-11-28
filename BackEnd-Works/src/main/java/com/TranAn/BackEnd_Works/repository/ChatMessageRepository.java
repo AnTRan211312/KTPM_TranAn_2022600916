@@ -40,7 +40,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     // ✨ MỚI: Lấy message cuối cùng của session
     Optional<ChatMessage> findFirstByUserAndSessionIdOrderByCreatedAtDesc(User user, String sessionId);
 
-    // ✨ MỚI: Lấy tất cả sessionId của user (DISTINCT)
-    @Query("SELECT DISTINCT cm.sessionId FROM ChatMessage cm WHERE cm.user = :user ORDER BY cm.createdAt DESC")
+    // ✨ MỚI: Lấy tất cả sessionId của user (DISTINCT) - sắp xếp theo thời gian message cuối cùng
+    @Query("SELECT cm.sessionId FROM ChatMessage cm WHERE cm.user = :user " +
+           "GROUP BY cm.sessionId ORDER BY MAX(cm.createdAt) DESC")
     List<String> findDistinctSessionIdsByUser(@Param("user") User user);
 }

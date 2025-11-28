@@ -14,7 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Subscriber")
-@RequestMapping
+@RequestMapping("/subscribers")
 @RestController
 @RequiredArgsConstructor
 public class SubscriberController {

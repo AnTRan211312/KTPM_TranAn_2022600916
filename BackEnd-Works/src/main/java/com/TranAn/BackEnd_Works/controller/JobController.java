@@ -158,7 +158,7 @@ public class JobController {
     @PreAuthorize("hasAuthority('DELETE /jobs/{id}')")
     @Operation(
             summary = "Xóa Job theo id",
-            description = "Yêu cầu quyền: <b>DELETE jobs/{id}</b>"
+            description = "Yêu cầu quyền: <b>DELETE /jobs/{id}</b>"
     )
     public ResponseEntity<?> deleteJobById(@PathVariable Long id) {
         return ResponseEntity.ok(jobService.deleteJobById(id));
@@ -169,7 +169,7 @@ public class JobController {
     @PreAuthorize("hasAuthority('DELETE /jobs/company/{id}')")
     @Operation(
             summary = "Xóa Job theo id thuộc company của người dùng hiện tại",
-            description = "Yêu cầu quyền: <b>DELETE jobs/company/{id}</b>"
+            description = "Yêu cầu quyền: <b>DELETE /jobs/company/{id}</b>"
     )
     public ResponseEntity<?> deleteJobByIdForRecruiterCompany(@PathVariable Long id) {
         return ResponseEntity.ok(jobService.deleteJobByIdForRecruiterCompany(id));

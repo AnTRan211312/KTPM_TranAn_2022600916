@@ -18,10 +18,9 @@ public interface SkillRepository extends
 
     boolean existsByNameAndIdNot(String name, Long id);
 
-//    @Query("SELECT s.name, COUNT(j) " +
-//            "FROM Skill s JOIN s.jobs j " +
-//            "GROUP BY s.name " +
-//            "ORDER BY COUNT(j) DESC")
-//    List<Object[]> findTopSkillsByJobCount(int limit);
-
+    @Query("SELECT s.name, COUNT(j) " +
+            "FROM Skill s JOIN s.jobs j " +
+            "GROUP BY s.name " +
+            "ORDER BY COUNT(j) DESC")
+    List<Object[]> findTopSkillsByJobCount();
 }

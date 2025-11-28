@@ -5,14 +5,18 @@ import com.TranAn.BackEnd_Works.model.SessionMeta;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+
 import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -26,32 +30,58 @@ import java.util.List;
 @Configuration
 public class RedisConfig {
 
-    @Value("${redis.host}")
+
+
+    @Value("${spring.data.redis.host}")
     private String redisHost;
 
-    @Value("${redis.port}")
+    @Value("${spring.data.redis.port}")
     private int redisPort;
 
-    @Value("${redis.password}")
+    @Value("${spring.data.redis.password}")
     private String redisPassword;
 
-    // =====================================================================
-    // 1. Kết nối tới Redis
-    //    - Định nghĩa RedisConnectionFactory với host, port, password
-    //    - Bean này dùng chung cho RedisTemplate & Spring Cache
-    // =====================================================================
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration serverConfig =
                 new RedisStandaloneConfiguration(redisHost, redisPort);
 
-        if (!redisPassword.isBlank()) {
+        if (redisPassword != null &&!redisPassword.isBlank()) {
             serverConfig.setPassword(RedisPassword.of(redisPassword));
         }
 
         return new LettuceConnectionFactory(serverConfig);
     }
 
+
+//    @Value("${spring.data.redis.cluster.nodes}")
+//    private String redisEndpoint;
+//
+//    @Bean
+//    public RedisConnectionFactory redisConnectionFactory() {
+//        String endpoint = redisEndpoint.trim();
+//        // Xóa các tiền tố protocol không cần thiết
+//        if (endpoint.startsWith("tls://")) {
+//            endpoint = endpoint.substring(6);
+//        } else if (endpoint.startsWith("redis://")) {
+//            endpoint = endpoint.substring(8);
+//        }
+//
+//        // Tạo cấu hình cluster từ endpoint
+//        // Lưu ý: ElastiCache Serverless endpoint không chứa port.
+//        // ElastiCache Cluster Mode endpoint chứa port, thường là 6379.
+//        RedisClusterConfiguration clusterConfig =
+//                new RedisClusterConfiguration(List.of(endpoint));
+//
+//        // Cấu hình client cơ bản nhất
+//        // Chúng ta vẫn cần bật SSL/TLS nếu ElastiCache yêu cầu
+//        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+//                .useSsl() // Giữ lại nếu ElastiCache của bạn bật In-Transit Encryption (SSL/TLS)
+//                .build();
+//
+//        // Tạo connection factory
+//        return new LettuceConnectionFactory(clusterConfig, clientConfig);
+//    }
 
     // =====================================================================
     // 2. RedisTemplate cho SessionMeta (Authentication sessions)

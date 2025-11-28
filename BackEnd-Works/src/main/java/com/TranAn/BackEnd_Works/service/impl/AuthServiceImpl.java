@@ -32,6 +32,7 @@ import java.time.temporal.ChronoUnit;
 
 import java.util.List;
 
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -45,6 +46,9 @@ public class AuthServiceImpl implements AuthService {
     private final EmailService emailService;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+
+    @Value("${app.environment:development}")
+    private String environment;
 
     @Value("${jwt.access-token-expiration}")
     public Long accessTokenExpiration;
@@ -392,13 +396,29 @@ public class AuthServiceImpl implements AuthService {
                 sessionMetaRequest,
                 Duration.ofSeconds(refreshTokenExpiration));
 
-        ResponseCookie responseCookie = ResponseCookie
+        // Bắt đầu xây dựng cookie, nhưng chưa build vội
+        ResponseCookie.ResponseCookieBuilder cookieBuilder = ResponseCookie
                 .from("refresh_token", refreshToken)
                 .httpOnly(true)
                 .path("/")
-                .sameSite("Strict")
-                .maxAge(refreshTokenExpiration)
-                .build();
+                .maxAge(refreshTokenExpiration);
+
+        // =======================================================
+        // == THAY ĐỔI QUAN TRỌNG NHẤT NẰM Ở ĐÂY ==
+        // =======================================================
+        // Kiểm tra xem có phải môi trường production không
+        if ("production".equalsIgnoreCase(environment)) {
+            // Nếu là production (chạy trên AWS), bắt buộc phải dùng SameSite=None
+            // và Secure=true (để chạy với HTTPS qua CloudFront)
+            cookieBuilder.sameSite("None").secure(true);
+        } else {
+            // Nếu là development (chạy ở local), dùng Lax hoặc Strict đều được
+            cookieBuilder.sameSite("Lax");
+        }
+        // =======================================================
+
+        // Bây giờ mới build cookie sau khi đã thêm logic if/else
+        ResponseCookie responseCookie = cookieBuilder.build();
 
         String accessToken = buildJwt(accessTokenExpiration, user);
 

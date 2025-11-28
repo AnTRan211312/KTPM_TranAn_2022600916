@@ -13,8 +13,7 @@ public class SkipPathBearerTokenResolver implements BearerTokenResolver {
 
     private final List<String> skipPaths = List.of(
             "/auth/logout",
-            "/auth/register"
-    );
+            "/auth/register");
 
     @Override
     public String resolve(HttpServletRequest request) {
@@ -29,4 +28,3 @@ public class SkipPathBearerTokenResolver implements BearerTokenResolver {
         return delegate.resolve(request);
     }
 }
-

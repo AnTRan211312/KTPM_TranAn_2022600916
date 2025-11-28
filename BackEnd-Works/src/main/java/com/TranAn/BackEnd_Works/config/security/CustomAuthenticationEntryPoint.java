@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
@@ -20,18 +19,14 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final AuthenticationEntryPoint delegate = new BearerTokenAuthenticationEntryPoint();
     private final ObjectMapper objectMapper;
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        delegate.commence(request, response, authException);
-
+        // Set response status and headers BEFORE writing
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-//        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-//        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
 
         ApiResponse<?> apiResponse = new ApiResponse<>(
                 "Token không hợp lệ (không đúng định dạng, hết hạn)",

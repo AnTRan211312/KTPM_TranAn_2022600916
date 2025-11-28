@@ -34,12 +34,13 @@ public interface UserRepository extends
 
     long count();
 
-//    long countByCreatedAtBetween(Instant startThisMonth, Instant now);
-//
-//
-//    Long countByCreatedAtAfter(LocalDateTime date);
-//    Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
-//    Long countByLastLoginAfter(LocalDateTime date); // Cần thêm field lastLogin trong User model
-//    Long countByRole_Name(String roleName);
+    @Query("SELECT COUNT(u) FROM User u WHERE u.createdAt >= :start")
+    Long countByCreatedAtAfter(@Param("start") Instant start);
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.createdAt >= :start AND u.createdAt < :end")
+    Long countByCreatedAtBetween(@Param("start") Instant start, @Param("end") Instant end);
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role.name = :roleName")
+    Long countByRole_Name(@Param("roleName") String roleName);
 }
 

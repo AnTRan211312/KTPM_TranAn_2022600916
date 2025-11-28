@@ -30,7 +30,7 @@ public class RoleController {
 
     @PostMapping
     @ApiMessage(value = "Tạo role")
-    @PreAuthorize("hasAuthority('POST/roles')")
+    @PreAuthorize("hasAuthority('POST /roles')")
     @Operation(
             summary = "Tạo role",
             description = "yêu cầu quyền: <b>POST /roles</b>"
@@ -45,7 +45,7 @@ public class RoleController {
 
     @GetMapping
     @ApiMessage(value = "Lấy danh sách role")
-    @PreAuthorize("hasAuthority('Get /roles')")
+    @PreAuthorize("hasAuthority('GET /roles')")
     @Operation(
             summary = "Lấy danh sách role",
             description = "Yêu cầu quyền : <b> GET /roles</b>"
