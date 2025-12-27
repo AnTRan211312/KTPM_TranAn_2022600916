@@ -8,12 +8,27 @@ import type {
 } from "@/types/chat.d.ts";
 
 /**
- * Gửi tin nhắn tới AI
+ * Gửi tin nhắn tới AI (hỗ trợ file attachments)
  * Yêu cầu quyền: POST /api/chat-message
  * Lưu ý: Backend trả về String trực tiếp (không bọc trong ApiResponse)
  */
-export const sendChatMessage = (data: ChatRequest) => {
-  return axiosClient.post<string>("/chat-message", data);
+export const sendChatMessage = (data: ChatRequest & { files?: File[] }) => {
+  const formData = new FormData();
+  formData.append("question", data.question);
+  formData.append("sessionId", data.sessionId);
+
+  // Add files if present
+  if (data.files && data.files.length > 0) {
+    data.files.forEach(file => {
+      formData.append("files", file);
+    });
+  }
+
+  return axiosClient.post<string>("/chat-message", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 };
 
 /**

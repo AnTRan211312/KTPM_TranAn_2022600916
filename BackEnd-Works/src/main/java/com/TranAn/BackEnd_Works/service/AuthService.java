@@ -18,7 +18,7 @@ public interface AuthService {
 
     AuthResult handleRefresh(String refreshToken, SessionMetaRequest sessionMetaRequest);
 
-    List<SessionMetaResponse> getAllSelfSessionMetas(String refreshToken);
+    List<SessionMetaResponse> getAllSelfSessionMetas();
 
     UserDetailsResponseDto getCurrentUserDetails();
 

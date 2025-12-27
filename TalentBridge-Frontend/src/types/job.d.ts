@@ -2,6 +2,8 @@
 // =============================
 // MAIN INTERFACE
 // =============================
+export type JobStatus = "ACTIVE" | "EXPIRED" | "PAUSED" | "DRAFT";
+
 export interface Job {
   id: number;
   name: string;
@@ -12,7 +14,7 @@ export interface Job {
   description: string;
   startDate: string;
   endDate: string;
-  active: boolean;
+  status: JobStatus;
   company: CompanySummary;
   skills: SkillSummary[];
 }
@@ -26,7 +28,7 @@ export interface JobUpsertDto {
   description: string;
   startDate: string;
   endDate: string;
-  active: boolean;
+  status: JobStatus;
   company: {
     id: number;
   } | null;

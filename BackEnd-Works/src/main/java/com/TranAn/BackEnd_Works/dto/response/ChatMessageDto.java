@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -20,4 +21,7 @@ public class ChatMessageDto {
     private Instant createdAt;
 
     private String createdBy;
+
+    private List<String> attachmentUrls;
+    private List<String> attachmentTypes;
 }

@@ -2,6 +2,7 @@ package com.TranAn.BackEnd_Works.model;
 
 import com.TranAn.BackEnd_Works.model.common.BaseEntity;
 import com.TranAn.BackEnd_Works.model.constant.Gender;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.*;
@@ -10,14 +11,13 @@ import lombok.*;
 import java.time.LocalDate;
 import java.util.List;
 
-
 @Entity
 @Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@JsonPropertyOrder({"id", "name", "email", "password", "age", "address", "gender"})
+@JsonPropertyOrder({ "id", "name", "email", "password", "age", "address", "gender" })
 public class User extends BaseEntity {
 
     @Id
@@ -52,6 +52,11 @@ public class User extends BaseEntity {
     @ToString.Exclude
     private List<Resume> resumes;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @ToString.Exclude
+    @JsonIgnore
+    private List<ChatMessage> chatMessages;
+
     @ManyToOne
     @JoinColumn(name = "role_id")
     @ToString.Exclude
@@ -66,5 +71,3 @@ public class User extends BaseEntity {
         this.gender = gender;
     }
 }
-
-

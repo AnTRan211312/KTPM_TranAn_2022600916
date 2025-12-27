@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select.tsx";
-import { BetweenVerticalStart } from "lucide-react";
+import { BetweenVerticalStart, Sparkles, Loader2, ThumbsUp, AlertTriangle, Lightbulb, CheckCircle2, X } from "lucide-react";
 
 import type {
   ResumeForDisplayResponseDto,
@@ -26,6 +26,8 @@ import PDFViewer from "@/components/custom/PDFViewer.tsx";
 import RichTextPreview from "@/components/custom/RichText/index-preview.tsx";
 import { statusOptions } from "@/utils/tagColorMapper.ts";
 import { toast } from "sonner";
+import { analyzeResume, type CVAnalysisResponse } from "@/services/resumeApi.ts";
+import { getErrorMessage } from "@/features/slices/auth/authThunk.ts";
 
 interface ViewResumeDialogProps {
   open: boolean;
@@ -47,12 +49,15 @@ export function ViewResumeDialog({
   const [status, setStatus] = useState(resume.status);
   const [openJobInfo, setOpenJobInfo] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<CVAnalysisResponse | null>(null);
 
   useEffect(() => {
     if (open) setStatus(resume.status);
     else {
       setStatus("");
       setOpenJobInfo(false);
+      setAnalysisResult(null);
     }
   }, [open, resume.status]);
 
@@ -87,6 +92,38 @@ export function ViewResumeDialog({
     }
   };
 
+  const handleAnalyzeCV = async () => {
+    if (!resume.id) {
+      toast.error("Resume ID không hợp lệ");
+      return;
+    }
+
+    setIsAnalyzing(true);
+    try {
+      const res = await analyzeResume(resume.id);
+      setAnalysisResult(res.data.data);
+      toast.success("Phân tích CV hoàn tất!");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Không thể phân tích CV"));
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return "text-green-600";
+    if (score >= 60) return "text-yellow-600";
+    if (score >= 40) return "text-orange-600";
+    return "text-red-600";
+  };
+
+  const getProgressColor = (score: number) => {
+    if (score >= 80) return "bg-green-500";
+    if (score >= 60) return "bg-yellow-500";
+    if (score >= 40) return "bg-orange-500";
+    return "bg-red-500";
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -99,17 +136,115 @@ export function ViewResumeDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <Button
-          className={`w-fit hover:-translate-y-0.5 ${
-            openJobInfo
+        <div className="flex gap-2">
+          <Button
+            className={`w-fit hover:-translate-y-0.5 ${openJobInfo
               ? `border border-gray-100 text-white ${theme === "blue" ? "bg-blue-500 hover:bg-blue-600" : "bg-purple-500 hover:bg-purple-600"}`
               : `border bg-white hover:bg-white ${theme === "blue" ? "border-blue-500 text-blue-500" : "border-purple-500 text-purple-500"}`
-          }`}
-          onClick={() => setOpenJobInfo((v) => !v)}
-        >
-          <BetweenVerticalStart />
-          {openJobInfo ? "Ẩn Job Info" : "Xem Job Info"}
-        </Button>
+              }`}
+            onClick={() => setOpenJobInfo((v) => !v)}
+          >
+            <BetweenVerticalStart />
+            {openJobInfo ? "Ẩn Job Info" : "Xem Job Info"}
+          </Button>
+
+          <Button
+            className="w-fit hover:-translate-y-0.5 border border-purple-300 bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600"
+            onClick={handleAnalyzeCV}
+            disabled={isAnalyzing}
+          >
+            {isAnalyzing ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                Đang phân tích...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4 mr-1" />
+                Phân tích CV bằng AI
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* AI Analysis Results */}
+        {analysisResult && (
+          <div className="rounded-lg border border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50 p-4 space-y-3">
+            {/* Match Score */}
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-gray-700">Độ phù hợp với công việc:</span>
+              <div className="flex items-center gap-3">
+                <div className="w-40 h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-500 ${getProgressColor(analysisResult.matchScore)}`}
+                    style={{ width: `${analysisResult.matchScore}%` }}
+                  />
+                </div>
+                <span className={`text-3xl font-bold ${getScoreColor(analysisResult.matchScore)}`}>
+                  {analysisResult.matchScore}%
+                </span>
+              </div>
+            </div>
+
+            {/* Summary */}
+            <p className="text-sm text-gray-600 italic bg-white/50 rounded p-2">
+              {analysisResult.summary}
+            </p>
+
+            {/* Strengths & Weaknesses */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {/* Strengths */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1 text-green-600 font-medium text-sm">
+                  <ThumbsUp className="h-4 w-4" />
+                  Điểm mạnh
+                </div>
+                <ul className="text-xs text-gray-600 space-y-1">
+                  {analysisResult.strengths.map((s, i) => (
+                    <li key={i} className="flex items-start gap-1">
+                      <CheckCircle2 className="h-3 w-3 text-green-500 mt-0.5 flex-shrink-0" />
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Weaknesses */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1 text-yellow-600 font-medium text-sm">
+                  <AlertTriangle className="h-4 w-4" />
+                  Cần cải thiện
+                </div>
+                <ul className="text-xs text-gray-600 space-y-1">
+                  {analysisResult.weaknesses.map((w, i) => (
+                    <li key={i} className="flex items-start gap-1">
+                      <X className="h-3 w-3 text-yellow-500 mt-0.5 flex-shrink-0" />
+                      {w}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Suggestions */}
+              {analysisResult.suggestions.length > 0 && (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1 text-blue-600 font-medium text-sm">
+                    <Lightbulb className="h-4 w-4" />
+                    Gợi ý
+                  </div>
+                  <ul className="text-xs text-gray-600 space-y-1">
+                    {analysisResult.suggestions.map((s, i) => (
+                      <li key={i} className="flex items-start gap-1">
+                        <span className="text-blue-500 font-bold">•</span>
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {!openJobInfo && (
           <ScrollArea className="h-3/4">

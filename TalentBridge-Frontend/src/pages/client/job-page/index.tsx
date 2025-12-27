@@ -10,7 +10,7 @@ import Pagination from "@/components/custom/Pagination";
 
 export default function JobClientPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   // ============================
   // Data
   // ============================
@@ -28,7 +28,6 @@ export default function JobClientPage() {
   // ============================
   // Search State
   // ============================
-  const [isExpandedSearch, setIsExpandedSearch] = useState(false);
 
   const [searchName, setSearchName] = useState(searchParams.get("name") || "");
   const [searchCompanyName, setsearchCompanyName] = useState("");
@@ -55,11 +54,12 @@ export default function JobClientPage() {
         filters.push(`company.name ~ '*${searchCompanyName}*'`);
       if (searchLevel && searchLevel !== "all")
         filters.push(`level : '${searchLevel}'`);
-      if (searchLocation) filters.push(`address ~ '*${searchLocation}*'`);
+      if (searchLocation) filters.push(`location ~ '*${searchLocation}*'`);
 
       const filter = filters.length > 0 ? filters.join(" and ") : null;
 
-      const res = (await findAllJobs({ page, size, filter })).data.data;
+      // Sort: ưu tiên status=ACTIVE trước (alphabet ASC: ACTIVE < DRAFT < EXPIRED)
+      const res = (await findAllJobs({ page, size, filter, sort: "status,asc" })).data.data;
       setJobs(res.content);
       setTotalElements(res.totalElements);
       setTotalPages(res.totalPages);
@@ -74,7 +74,7 @@ export default function JobClientPage() {
   useEffect(() => {
     const nameParam = searchParams.get("name");
     const locationParam = searchParams.get("location");
-    
+
     if (nameParam !== null) {
       setSearchName(nameParam);
     }
@@ -119,7 +119,6 @@ export default function JobClientPage() {
     setsearchCompanyName("");
     setSearchLevel("all");
     setSearchLocation("");
-    setIsExpandedSearch(false);
 
     fetchJobs(
       currentPage,
@@ -168,9 +167,7 @@ export default function JobClientPage() {
             searchCompanyName={searchCompanyName}
             searchLevel={searchLevel}
             searchLocation={searchLocation}
-            isExpanded={isExpandedSearch}
             onReset={handleReset}
-            onExpandToggle={() => setIsExpandedSearch(!isExpandedSearch)}
             onChange={{
               name: setSearchName,
               company: setsearchCompanyName,

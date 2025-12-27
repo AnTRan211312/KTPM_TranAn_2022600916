@@ -1,4 +1,4 @@
-import axiosClient from "@/lib/axiosClient"; // Chỉ cần import cái này
+import axiosClient from "@/lib/axiosClient";
 import type { ApiResponse } from "@/types/apiResponse.d.ts";
 import type {
   UserLoginRequestDto,
@@ -10,13 +10,14 @@ import type {
   UserRegisterRequestDto,
 } from "@/types/user.d.ts";
 import { getSessionMeta } from "@/utils/sessionHelper";
- import axios from "axios"; // <-- XÓA DÒNG NÀY ĐI
+import axios from "axios";
 
 export const registerApi = (data: UserRegisterRequestDto) => {
   return axios.post("http://localhost:8080/auth/register", data, {
     withCredentials: true,
   });
 };
+
 export const loginApi = (data: UserLoginRequestDto) => {
   data = {
     ...data,
@@ -58,7 +59,7 @@ export const refreshTokenApi = () => {
 };
 
 export const getSessions = () => {
-  return axiosClient.get<ApiResponse<SessionMetaResponse[]>>(`/auth/sessions`);
+  return axiosClient.get<ApiResponse<SessionMetaResponse[]>>("/auth/sessions");
 };
 
 export const removeSessionId = (sessionId: string) => {

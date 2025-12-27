@@ -3,6 +3,7 @@ package com.TranAn.BackEnd_Works.service;
 import com.TranAn.BackEnd_Works.dto.request.ChatRequest;
 import com.TranAn.BackEnd_Works.dto.response.ChatMessageDto;
 import com.TranAn.BackEnd_Works.dto.response.ChatSessionDto;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -11,7 +12,7 @@ public interface ChatService {
     /**
      * Generate AI response for user's question
      */
-    String generation(ChatRequest request, String userEmail);
+    String generation(ChatRequest request, List<MultipartFile> files, String userEmail);
 
     /**
      * Get chat history for a specific session

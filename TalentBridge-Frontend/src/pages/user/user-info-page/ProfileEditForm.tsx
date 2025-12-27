@@ -1,7 +1,11 @@
 import type React from "react";
-
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -15,20 +19,22 @@ import type {
   SelfUserUpdateProfileRequestDto,
   UserDetailsResponseDto,
 } from "@/types/user.d.ts";
-import { Save, User, X } from "lucide-react";
-import { useState } from "react";
+import { Save, User } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface ProfileEditFormProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   userDetails: UserDetailsResponseDto;
   onSubmit: (data: SelfUserUpdateProfileRequestDto) => void;
-  onCancel: () => void;
   isLoading?: boolean;
 }
 
 const ProfileEditForm = ({
+  open,
+  onOpenChange,
   userDetails,
   onSubmit,
-  onCancel,
   isLoading = false,
 }: ProfileEditFormProps) => {
   const [formData, setFormData] = useState<SelfUserUpdateProfileRequestDto>({
@@ -37,6 +43,18 @@ const ProfileEditForm = ({
     address: userDetails.address,
     gender: userDetails.gender,
   });
+
+  // Reset form when opening
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        name: userDetails.name,
+        dob: userDetails.dob ? userDetails.dob.split("T")[0] : "",
+        address: userDetails.address,
+        gender: userDetails.gender,
+      });
+    }
+  }, [open, userDetails]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,26 +73,16 @@ const ProfileEditForm = ({
   };
 
   return (
-    <Card className="mt-6 border-orange-200 shadow-lg">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-xl font-bold text-orange-800">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-xl font-bold text-orange-800">
             <User className="h-5 w-5" />
             Cập nhật thông tin cá nhân
-          </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onCancel}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
+          </DialogTitle>
+        </DialogHeader>
 
-      <CardContent className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 py-4">
           <div className="grid gap-6 md:grid-cols-2">
             {/* Name Field */}
             <div className="space-y-2">
@@ -177,7 +185,7 @@ const ProfileEditForm = ({
             <Button
               type="button"
               variant="outline"
-              onClick={onCancel}
+              onClick={() => onOpenChange(false)}
               disabled={isLoading}
               className="flex-1 border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50"
             >
@@ -185,8 +193,8 @@ const ProfileEditForm = ({
             </Button>
           </div>
         </form>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -26,10 +26,11 @@ public class S3ServiceImpl implements S3Service {
     private final S3Presigner s3Presigner;
     private final String awsBucketName;
     private final String awsRegion;
+
     @Override
     public String uploadFile(MultipartFile file, String folder, String fileName, boolean getUrl) {
-        try{
-            if(file == null || file.isEmpty()){
+        try {
+            if (file == null || file.isEmpty()) {
                 throw new S3UploadException("Tệp không được rỗng hoặc null");
             }
             String key = String.format("%s/%s", folder, fileName);
@@ -43,7 +44,8 @@ public class S3ServiceImpl implements S3Service {
             s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
             if (getUrl)
                 return String.format("https://%s.s3.%s.amazonaws.com/%s", awsBucketName, awsRegion, key);
-            else return key;
+            else
+                return key;
         } catch (IOException e) {
             throw new S3UploadException("Lỗi khi đọc dữ liệu từ tệp");
         } catch (Exception e) {
@@ -67,7 +69,8 @@ public class S3ServiceImpl implements S3Service {
 
             if (getUrl)
                 return String.format("https://%s.s3.%s.amazonaws.com/%s", awsBucketName, awsRegion, key);
-            else return key;
+            else
+                return key;
         } catch (IOException e) {
             throw new S3UploadException("Lỗi khi đọc dữ liệu từ tệp logo");
         } catch (Exception e) {
@@ -76,10 +79,7 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    @Cacheable(
-            cacheNames = "presign",
-            key = "#key + ':' + #expireDuration.seconds"
-    )
+    @Cacheable(cacheNames = "presign", key = "#key + ':' + #expireDuration.seconds")
     public String generatePresignedUrl(String key, Duration expireDuration) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(awsBucketName)
@@ -112,7 +112,8 @@ public class S3ServiceImpl implements S3Service {
             s3Client.deleteObject(deleteRequest);
 
         } catch (Exception e) {
-            throw new S3UploadException("Lỗi khi xóa file khỏi S3");
+            // Log warning instead of throwing exception - file may not exist
+            System.err.println("Warning: Could not delete file from S3: " + fileUrl + ". Error: " + e.getMessage());
         }
 
     }
@@ -132,10 +133,12 @@ public class S3ServiceImpl implements S3Service {
             s3Client.deleteObject(deleteRequest);
 
         } catch (Exception e) {
-            throw new S3UploadException("Lỗi khi xóa file khỏi S3");
+            // Log warning instead of throwing exception - file may not exist
+            System.err.println("Warning: Could not delete file from S3 by key: " + key + ". Error: " + e.getMessage());
         }
 
     }
+
     private String extractObjectKeyFromUrl(String url) {
         String base = String.format("https://%s.s3.%s.amazonaws.com/", awsBucketName, awsRegion);
         if (!url.startsWith(base)) {

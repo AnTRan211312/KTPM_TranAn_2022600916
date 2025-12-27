@@ -25,9 +25,9 @@ export default function UserPage() {
           style={{ height: "fit-content", maxHeight: "80vh" }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-gray-200 p-6">
-            <h1 className="text-xl font-semibold text-gray-800">
-              Xin chào <span className="text-yellow-500">{user.name}</span>!
+          <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+            <h1 className="text-xl font-bold text-gray-800">
+              Bảng điều khiển
             </h1>
           </div>
 
@@ -60,7 +60,7 @@ export default function UserPage() {
                       <li key={item.title}>
                         <Link
                           to={item.href}
-                          className="flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                          className="flex items-center rounded-lg px-4 py-2.5 text-sm font-medium transition-colors duration-200 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
                           {linkContent}
                         </Link>
@@ -73,9 +73,9 @@ export default function UserPage() {
                       <NavLink
                         to={item.href}
                         className={({ isActive }) =>
-                          `flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 ${
+                          `flex items-center rounded-lg px-4 py-2.5 text-sm font-medium transition-colors duration-200 ${
                             isActive
-                              ? "bg-blue-100 text-blue-700"
+                              ? "bg-orange-100 text-orange-700"
                               : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                           } `
                         }

@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
 @Repository
 public interface UserRepository extends
         JpaRepository<User, Long>,
@@ -42,5 +43,7 @@ public interface UserRepository extends
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.role.name = :roleName")
     Long countByRole_Name(@Param("roleName") String roleName);
-}
 
+    // Tìm tất cả users có role cụ thể (ADMIN, RECRUITER, etc.)
+    List<User> findByRole_Name(String roleName);
+}

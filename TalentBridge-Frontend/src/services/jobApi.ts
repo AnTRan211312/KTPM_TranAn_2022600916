@@ -18,6 +18,7 @@ export const findAllJobs = ({
   page = 0,
   size = 5,
   filter,
+  sort,
 }: PaginationParams) => {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -25,6 +26,7 @@ export const findAllJobs = ({
   });
 
   if (filter) params.append("filter", filter);
+  if (sort) params.append("sort", sort);
 
   return axiosClient.get<ApiResponse<PageResponseDto<Job>>>(
     `/jobs?${params.toString()}`,
@@ -43,6 +45,7 @@ export const findAllJobsForRecruiterCompany = ({
   page = 0,
   size = 5,
   filter,
+  sort,
 }: PaginationParams) => {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -50,6 +53,7 @@ export const findAllJobsForRecruiterCompany = ({
   });
 
   if (filter) params.append("filter", filter);
+  if (sort) params.append("sort", sort);
 
   return axiosClient.get<ApiResponse<PageResponseDto<Job>>>(
     `/jobs/company?${params.toString()}`,
@@ -73,4 +77,23 @@ export const deleteJobById = (id: number) => {
 
 export const deleteJobByIdForRecruiterCompany = (id: number) => {
   return axiosClient.delete(`/jobs/company/${id}`);
+};
+
+// Types cho stats
+export interface JobLevelStats {
+  INTERN: number;
+  FRESHER: number;
+  MIDDLE: number;
+  SENIOR: number;
+  LEADER: number;
+}
+
+// API lấy thống kê level của job
+export const getJobStatsByLevel = () => {
+  return axiosClient.get<ApiResponse<JobLevelStats>>("/jobs/stats/level");
+};
+
+// API lấy thống kê level của job cho công ty của Recruiter
+export const getJobStatsByLevelForRecruiterCompany = () => {
+  return axiosClient.get<ApiResponse<JobLevelStats>>("/jobs/company/stats/level");
 };

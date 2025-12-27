@@ -6,7 +6,7 @@ import com.TranAn.BackEnd_Works.model.Permission;
 import com.TranAn.BackEnd_Works.repository.PermissionRepository;
 import com.TranAn.BackEnd_Works.repository.RoleRepository;
 import com.TranAn.BackEnd_Works.service.PermissionService;
-import com.TranAn.BackEnd_Works.service.RoleService;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

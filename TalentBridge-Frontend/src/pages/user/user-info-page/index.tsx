@@ -32,7 +32,7 @@ import {
   User,
   Users,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import AvatarUploadForm from "./AvatarUploadForm";
 import PasswordChangeForm from "./PasswordChangeForm";
@@ -55,9 +55,7 @@ const UserInfoPage = () => {
     useState(false);
   const [isOpenAvatarUploadForm, setIsOpenAvatarUploadForm] = useState(false);
 
-  // Ref
-  const profileFormRef = useRef<HTMLDivElement | null>(null);
-  const passwordFormRef = useRef<HTMLDivElement | null>(null);
+
 
   // ======================================
   // Handle Fetching User Details
@@ -84,27 +82,6 @@ const UserInfoPage = () => {
   useEffect(() => {
     fetchUserDetails();
   }, [fetchUserDetails]);
-
-  // ======================================
-  // Handle Open Form
-  // ======================================
-  useEffect(() => {
-    if (isOpenProfileEditForm && profileFormRef.current) {
-      profileFormRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }
-  }, [isOpenProfileEditForm]);
-
-  useEffect(() => {
-    if (isOpenPasswordChangeForm && passwordFormRef.current) {
-      passwordFormRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }
-  }, [isOpenPasswordChangeForm]);
 
   // ======================================
   // Handle Actions Call API
@@ -454,26 +431,20 @@ const UserInfoPage = () => {
 
       {userDetails && (
         <div>
-          <div ref={profileFormRef}>
-            {isOpenProfileEditForm && (
-              <ProfileEditForm
-                userDetails={userDetails}
-                onSubmit={handleUpdateProfile}
-                onCancel={() => setIsOpenProfileEditForm(false)}
-                isLoading={isUpdating}
-              />
-            )}
-          </div>
+          <ProfileEditForm
+            open={isOpenProfileEditForm}
+            onOpenChange={setIsOpenProfileEditForm}
+            userDetails={userDetails}
+            onSubmit={handleUpdateProfile}
+            isLoading={isUpdating}
+          />
 
-          <div ref={passwordFormRef}>
-            {isOpenPasswordChangeForm && (
-              <PasswordChangeForm
-                onSubmit={handleUpdatePassword}
-                onCancel={() => setIsOpenPasswordChangeForm(false)}
-                isLoading={isUpdating}
-              />
-            )}
-          </div>
+          <PasswordChangeForm
+            open={isOpenPasswordChangeForm}
+            onOpenChange={setIsOpenPasswordChangeForm}
+            onSubmit={handleUpdatePassword}
+            isLoading={isUpdating}
+          />
 
           {isOpenAvatarUploadForm && (
             <AvatarUploadForm

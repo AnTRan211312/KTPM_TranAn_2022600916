@@ -32,7 +32,6 @@ import java.time.temporal.ChronoUnit;
 
 import java.util.List;
 
-
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -67,8 +66,7 @@ public class AuthServiceImpl implements AuthService {
                 passwordEncoder.encode(userRegisterRequestDto.getPassword()),
                 userRegisterRequestDto.getDob(),
                 userRegisterRequestDto.getAddress(),
-                userRegisterRequestDto.getGender()
-        );
+                userRegisterRequestDto.getGender());
 
         Role role;
         if (userRegisterRequestDto.isRecruiter())
@@ -90,8 +88,7 @@ public class AuthServiceImpl implements AuthService {
     public AuthResult handleLogin(UserLoginRequestDto userLoginRequestDto) {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
                 userLoginRequestDto.getEmail(),
-                userLoginRequestDto.getPassword()
-        );
+                userLoginRequestDto.getPassword());
 
         Authentication authentication = authenticationManager.authenticate(token);
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -113,13 +110,20 @@ public class AuthServiceImpl implements AuthService {
             refreshTokenRedisService.deleteRefreshToken(refreshToken, user.getId().toString());
         }
 
-        return ResponseCookie
+        ResponseCookie.ResponseCookieBuilder cookieBuilder = ResponseCookie
                 .from("refresh_token", "")
                 .httpOnly(true)
                 .path("/")
-                .sameSite("Strict")
-                .maxAge(0)
-                .build();
+                .maxAge(0);
+
+        // Sử dụng cùng logic SameSite như khi login
+        if ("production".equalsIgnoreCase(environment)) {
+            cookieBuilder.sameSite("None").secure(true);
+        } else {
+            cookieBuilder.sameSite("Lax").secure(false);
+        }
+
+        return cookieBuilder.build();
     }
 
     @Override
@@ -143,15 +147,17 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public List<SessionMetaResponse> getAllSelfSessionMetas(String refreshToken) {
-        String email = jwtDecoder.decode(refreshToken).getSubject();
+    public List<SessionMetaResponse> getAllSelfSessionMetas() {
+        // Lấy email từ JWT trong Authorization header (SecurityContext)
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User user = userRepository
                 .findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng"));
         String userId = user.getId().toString();
 
-        return refreshTokenRedisService.getAllSessionMetas(userId, refreshToken);
+        // Truyền null cho refreshToken - không thể xác định current session
+        return refreshTokenRedisService.getAllSessionMetas(userId, null);
     }
 
     @Override
@@ -174,8 +180,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getGender(),
                 user.getLogoUrl(),
                 user.getCreatedAt(),
-                user.getUpdatedAt()
-        );
+                user.getUpdatedAt());
     }
 
     @Override
@@ -216,16 +221,14 @@ public class AuthServiceImpl implements AuthService {
         // Kiểm tra nếu OTP còn hiệu lực
         if (otpRedisService.isOtpExist(request.getEmail())) {
             throw new IllegalArgumentException(
-                    "Mã OTP trước đó vẫn còn hiệu lực. Vui lòng kiểm tra email hoặc đợi 5 phút để gửi lại."
-            );
+                    "Mã OTP trước đó vẫn còn hiệu lực. Vui lòng kiểm tra email hoặc đợi 5 phút để gửi lại.");
         }
 
         // Kiểm tra rate limit
         if (!otpRedisService.canSendOtp(request.getEmail())) {
             int attempts = otpRedisService.getSendAttempts(request.getEmail());
             throw new IllegalArgumentException(
-                    "Bạn đã gửi OTP quá " + attempts + " lần. Vui lòng thử lại sau 15 phút."
-            );
+                    "Bạn đã gửi OTP quá " + attempts + " lần. Vui lòng thử lại sau 15 phút.");
         }
 
         // Tạo mã OTP
@@ -248,8 +251,7 @@ public class AuthServiceImpl implements AuthService {
                 true,
                 "Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư.",
                 300L, // 5 phút = 300 giây
-                remainingAttempts
-        );
+                remainingAttempts);
     }
 
     @Override
@@ -262,8 +264,7 @@ public class AuthServiceImpl implements AuthService {
         if (!otpRedisService.canSendOtp(request.getEmail())) {
             int attempts = otpRedisService.getSendAttempts(request.getEmail());
             throw new IllegalArgumentException(
-                    "Bạn đã gửi OTP quá " + attempts + " lần. Vui lòng thử lại sau 15 phút."
-            );
+                    "Bạn đã gửi OTP quá " + attempts + " lần. Vui lòng thử lại sau 15 phút.");
         }
 
         // Xóa OTP cũ (nếu có)
@@ -291,8 +292,7 @@ public class AuthServiceImpl implements AuthService {
                 true,
                 "Mã OTP mới đã được gửi đến email của bạn.",
                 300L,
-                remainingAttempts
-        );
+                remainingAttempts);
     }
 
     @Override
@@ -335,8 +335,7 @@ public class AuthServiceImpl implements AuthService {
 
         return new ResetPasswordResponseDto(
                 true,
-                "Mật khẩu đã được đặt lại thành công. Bạn có thể đăng nhập với mật khẩu mới."
-        );
+                "Mật khẩu đã được đặt lại thành công. Bạn có thể đăng nhập với mật khẩu mới.");
     }
     // ================================================
     // PRIVATE HELPER METHODS
@@ -365,8 +364,7 @@ public class AuthServiceImpl implements AuthService {
                 role.getName(),
                 permissions,
                 user.getLogoUrl(),
-                user.getUpdatedAt().toString()
-        );
+                user.getUpdatedAt().toString());
     }
 
     private UserSessionResponseDto mapToUserInformation(String email) {
@@ -412,8 +410,11 @@ public class AuthServiceImpl implements AuthService {
             // và Secure=true (để chạy với HTTPS qua CloudFront)
             cookieBuilder.sameSite("None").secure(true);
         } else {
-            // Nếu là development (chạy ở local), dùng Lax hoặc Strict đều được
+            // Nếu là development (chạy ở local), dùng Lax thay vì Strict
+            // vì Strict sẽ KHÔNG gửi cookie trong cross-origin requests
+            // (frontend localhost:3000 -> backend localhost:8080 là cross-origin)
             cookieBuilder.sameSite("Lax");
+            cookieBuilder.secure(false);
         }
         // =======================================================
 
@@ -424,8 +425,7 @@ public class AuthServiceImpl implements AuthService {
 
         AuthTokenResponseDto authTokenResponseDto = new AuthTokenResponseDto(
                 mapToUserInformation(user),
-                accessToken
-        );
+                accessToken);
 
         return new AuthResult(authTokenResponseDto, responseCookie);
     }

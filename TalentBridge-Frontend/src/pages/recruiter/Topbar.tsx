@@ -3,6 +3,7 @@ import { Clock } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAppSelector } from "@/features/hooks";
 import UserMenu from "@/pages/commons/UserMenu.tsx";
+import NotificationBell from "@/components/custom/NotificationBell";
 
 const routeTitles: Record<
   string,
@@ -101,6 +102,7 @@ export function RecruiterTopBar() {
       {/* Right side */}
       {isLogin && (
         <div className="flex items-center gap-3">
+          <NotificationBell darkTheme />
           <UserMenu blackTheme />
         </div>
       )}

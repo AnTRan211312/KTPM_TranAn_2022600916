@@ -52,7 +52,6 @@ public class UserServiceImpl implements UserService {
                 userCreateRequestDto.getAddress(),
                 userCreateRequestDto.getGender()
         );
-
        if(userCreateRequestDto.getCompany() != null) {
            handleSetCompany(user,userCreateRequestDto.getCompany().getId());
        }
@@ -70,7 +69,6 @@ public class UserServiceImpl implements UserService {
                 .findAll(spec,pageable)
                 .map(this::mapToResponseDto);
     }
-
     @Override
     public DefaultUserResponseDto findUserById(Long id) {
         return userRepository
@@ -80,7 +78,6 @@ public class UserServiceImpl implements UserService {
                         new EntityNotFoundException("không tìm thấy người dùng")
                 );
     }
-
     @Override
     public DefaultUserResponseDto updateUser(UserUpdateRequestDto userUpdateRequestDto) {
         User user = userRepository.findById(userUpdateRequestDto.getId())

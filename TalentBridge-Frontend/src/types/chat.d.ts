@@ -11,6 +11,8 @@ export interface ChatMessageDto {
   content: string;
   createdAt: string; // ISO format: "yyyy-MM-dd HH:mm:ss"
   createdBy: string;
+  attachmentUrls?: string[];
+  attachmentTypes?: string[];
 }
 
 export interface ChatSessionDto {

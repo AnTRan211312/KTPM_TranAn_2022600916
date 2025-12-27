@@ -16,7 +16,6 @@ public class OtpRedisServiceImpl implements OtpRedisService {
 
     private static final String OTP_PREFIX = "otp:";
     private static final String RATE_LIMIT_PREFIX = "otp_rate_limit:";
-    private static final int OTP_LENGTH = 6;
     private static final Duration OTP_EXPIRATION = Duration.ofMinutes(5); // OTP hết hạn sau 5 phút
     private static final Duration RATE_LIMIT_DURATION = Duration.ofMinutes(15); // Rate limit 15 phút
     private static final int MAX_ATTEMPTS = 3; // Tối đa 3 lần gửi OTP trong 15 phút

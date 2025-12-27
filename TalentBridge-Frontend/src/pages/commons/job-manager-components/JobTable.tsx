@@ -33,32 +33,49 @@ export function JobTable({
   onView,
   theme = "blue",
 }: JobTableProps) {
-  const getStatusBadge = (active: boolean) => {
-    const status = active ? "Active" : "Inactive";
-    const variants = {
-      Active: "default",
-      Inactive: "secondary",
-    } as const;
+  const getStatusBadge = (status: string) => {
+    const statusConfig: Record<string, { className: string; label: string; icon: string }> = {
+      ACTIVE: {
+        className: "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100",
+        label: "Đang tuyển",
+        icon: "●"
+      },
+      EXPIRED: {
+        className: "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100",
+        label: "Hết hạn",
+        icon: "✕"
+      },
+      PAUSED: {
+        className: "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100",
+        label: "Tạm dừng",
+        icon: "◐"
+      },
+      DRAFT: {
+        className: "bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100",
+        label: "Nháp",
+        icon: "◌"
+      },
+    };
+
+    const config = statusConfig[status] || { className: "bg-gray-100 text-gray-600 border border-gray-200", label: status, icon: "○" };
 
     return (
-      <Badge variant={variants[status]} className="capitalize">
-        {status}
+      <Badge className={`${config.className} font-medium transition-colors duration-200`}>
+        <span className="mr-1.5 text-[10px]">{config.icon}</span>
+        {config.label}
       </Badge>
     );
   };
 
   return (
     <div
-      className={`overflow-hidden rounded-lg border ${theme === "blue" ? "border-blue-600" : "border-purple-600"}`}
+      className={`overflow-hidden overflow-x-auto rounded-lg border ${theme === "blue" ? "border-blue-600" : "border-purple-600"}`}
     >
       <Table>
         <TableHeader
           className={`text-white ${theme === "blue" ? "bg-blue-600" : "bg-purple-600"}`}
         >
           <TableRow>
-            <TableHead className="text-center font-bold text-white">
-              ID
-            </TableHead>
             <TableHead className="text-center font-bold text-white">
               Tên Công việc
             </TableHead>
@@ -85,7 +102,7 @@ export function JobTable({
         <TableBody>
           {isLoading && (
             <TableRow>
-              <TableCell colSpan={8}>
+              <TableCell colSpan={7}>
                 <div className="flex items-center justify-center py-8">
                   <div
                     className={`h-8 w-8 animate-spin rounded-full border-b-2 ${theme === "blue" ? "border-blue-600" : "border-purple-600"}`}
@@ -97,7 +114,7 @@ export function JobTable({
 
           {!isLoading && jobs.length === 0 && (
             <TableRow>
-              <TableCell colSpan={8}>
+              <TableCell colSpan={7}>
                 <EmptyState
                   title="Không tìm thấy công việc nào"
                   description="Thử thay đổi tiêu chí tìm kiếm hoặc thêm công việc mới"
@@ -116,7 +133,6 @@ export function JobTable({
                 onClick={() => onView(job)}
                 className="cursor-pointer transition-colors duration-200"
               >
-                <TableCell className="text-center text-sm">{job.id}</TableCell>
                 <TableCell className="text-center text-sm">
                   {job.name}
                 </TableCell>
@@ -127,7 +143,7 @@ export function JobTable({
                   <Badge className={levelColors[job.level]}>{job.level}</Badge>
                 </TableCell>
                 <TableCell className="text-center text-sm">
-                  {getStatusBadge(job.active)}
+                  {getStatusBadge(job.status)}
                 </TableCell>
                 <TableCell className="text-center text-sm">
                   {formatISO(job.startDate)}

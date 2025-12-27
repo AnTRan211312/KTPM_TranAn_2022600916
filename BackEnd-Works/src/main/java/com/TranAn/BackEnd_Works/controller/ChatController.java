@@ -27,16 +27,20 @@ public class ChatController {
 
     private final ChatService chatService;
 
-    @PostMapping("/chat-message")
+    @PostMapping(value = "/chat-message", consumes = {
+            org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
+            org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE
+    })
     @ApiMessage(value = "Gửi tin nhắn thành công")
     @PreAuthorize("hasAuthority('POST /chat-message')")
-    @Operation(summary = "Gửi tin nhắn tới AI", description = "Yêu cầu quyền: <b>POST /chat-message</b>")
+    @Operation(summary = "Gửi tin nhắn tới AI (hỗ trợ file)", description = "Yêu cầu quyền: <b>POST /chat-message</b>")
     public ResponseEntity<String> chatMessage(
-            @Valid @RequestBody ChatRequest request,
+            @Valid @ModelAttribute ChatRequest request,
+            @RequestPart(required = false) List<org.springframework.web.multipart.MultipartFile> files,
             Authentication authentication) {
 
         String userEmail = authentication.getName();
-        String response = chatService.generation(request, userEmail);
+        String response = chatService.generation(request, files, userEmail);
         return ResponseEntity.ok(response);
     }
 
@@ -70,11 +74,8 @@ public class ChatController {
     @PostMapping("/chat-sessions")
     @ApiMessage(value = "Tạo session chat mới thành công")
     @PreAuthorize("hasAuthority('POST /chat-message')")
-    @Operation(
-            summary = "Tạo session chat mới",
-            description = "Yêu cầu quyền: <b>POST /chat-message</b>. " +
-                    "Tạo một session chat mới và trả về sessionId để sử dụng khi gửi tin nhắn."
-    )
+    @Operation(summary = "Tạo session chat mới", description = "Yêu cầu quyền: <b>POST /chat-message</b>. " +
+            "Tạo một session chat mới và trả về sessionId để sử dụng khi gửi tin nhắn.")
     public ResponseEntity<Map<String, String>> createSession(Authentication authentication) {
         String userEmail = authentication.getName();
         String sessionId = chatService.createSession(userEmail);
@@ -87,11 +88,9 @@ public class ChatController {
     @GetMapping("/chat-sessions")
     @ApiMessage(value = "Lấy danh sách sessions thành công")
     @PreAuthorize("hasAuthority('GET /chat-sessions')")
-    @Operation(
-            summary = "Lấy tất cả chat sessions của user với thông tin chi tiết",
-            description = "Yêu cầu quyền: <b>GET /chat-sessions</b>. " +
-                    "Trả về danh sách sessions với message đầu, message cuối, số lượng tin nhắn và thời gian."
-    )
+    @Operation(summary = "Lấy tất cả chat sessions của user với thông tin chi tiết", description = "Yêu cầu quyền: <b>GET /chat-sessions</b>. "
+            +
+            "Trả về danh sách sessions với message đầu, message cuối, số lượng tin nhắn và thời gian.")
     public ResponseEntity<List<ChatSessionDto>> getAllSessions(Authentication authentication) {
         String userEmail = authentication.getName();
         List<ChatSessionDto> sessions = chatService.getAllSessions(userEmail);
@@ -113,7 +112,6 @@ public class ChatController {
         return ResponseEntity.ok(Map.of(
                 "sessionId", sessionId,
                 "exists", exists,
-                "messageCount", messageCount
-        ));
+                "messageCount", messageCount));
     }
 }

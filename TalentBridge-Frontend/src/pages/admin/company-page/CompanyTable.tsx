@@ -33,7 +33,7 @@ export function CompanyTable({
   onDelete,
 }: CompanyTableProps) {
   return (
-    <div className="overflow-hidden rounded-lg border border-blue-600">
+    <div className="overflow-auto rounded-lg border border-blue-600" style={{ maxHeight: 'calc(100vh - 300px)' }}>
       <Table>
         <TableHeader className="bg-blue-600 text-white">
           <TableRow>
@@ -90,9 +90,8 @@ export function CompanyTable({
               return (
                 <TableRow
                   key={company.id}
-                  className={`cursor-pointer transition-colors duration-200 ${
-                    isActive ? "bg-muted/40" : "hover:bg-muted/50"
-                  }`}
+                  className={`cursor-pointer transition-colors duration-200 ${isActive ? "bg-muted/40" : "hover:bg-muted/50"
+                    }`}
                   onClick={() => onViewDetails(company)}
                 >
                   <TableCell className="text-center font-medium">
@@ -103,11 +102,11 @@ export function CompanyTable({
                       <img
                         src={company.logoUrl}
                         alt={`${company.name} logo`}
-                        className="h-20 w-20 rounded-lg border object-contain"
+                        className="h-12 w-12 rounded-lg border object-contain"
                       />
                     ) : (
-                      <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-blue-100">
-                        <Building2 className="h-10 w-10 text-blue-600" />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
+                        <Building2 className="h-6 w-6 text-blue-600" />
                       </div>
                     )}
                   </TableCell>

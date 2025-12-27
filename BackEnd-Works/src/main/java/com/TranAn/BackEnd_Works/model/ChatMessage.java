@@ -26,7 +26,7 @@ public class ChatMessage extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @ToString.Exclude
-    @JsonIgnoreProperties({"company", "role", "resumes", "password"})
+    @JsonIgnoreProperties({ "company", "role", "resumes", "password" })
     private User user;
 
     @Column(name = "session_id", nullable = false, length = 100)
@@ -39,11 +39,10 @@ public class ChatMessage extends BaseEntity {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    // Constructor để dễ tạo message
-    public ChatMessage(User user, String sessionId, MessageRole role, String content) {
-        this.user = user;
-        this.sessionId = sessionId;
-        this.role = role;
-        this.content = content;
-    }
+    @Column(name = "attachment_urls", columnDefinition = "TEXT")
+    private String attachmentUrls; // JSON array of S3 URLs
+
+    @Column(name = "attachment_types", length = 500)
+    private String attachmentTypes; // Comma-separated MIME types
+
 }

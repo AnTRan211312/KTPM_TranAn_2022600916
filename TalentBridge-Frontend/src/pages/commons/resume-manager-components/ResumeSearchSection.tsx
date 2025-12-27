@@ -22,9 +22,9 @@ export const ResumeSearchSection = ({
 }: ResumeSearchSectionProps) => {
   return (
     <div className="bg-card rounded-lg border p-4">
-      <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-3">
+      <div className="flex flex-wrap items-end gap-4">
         {!isRecruiter && setSearchCompanyName && (
-          <div className="space-y-2">
+          <div className="min-w-[200px] flex-1 space-y-2">
             <Label htmlFor="search-company-name">Tên công ty:</Label>
             <Input
               id="search-company-name"
@@ -34,7 +34,7 @@ export const ResumeSearchSection = ({
             />
           </div>
         )}
-        <div className="space-y-2">
+        <div className="min-w-[200px] flex-1 space-y-2">
           <Label htmlFor="search-job-name">Tên công việc:</Label>
           <Input
             id="search-job-name"
@@ -43,7 +43,7 @@ export const ResumeSearchSection = ({
             onChange={(e) => setSearchJobName(e.target.value)}
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex-shrink-0">
           <Button variant="outline" onClick={onReset}>
             <RotateCcw className="mr-2 h-4 w-4" />
             Tải lại

@@ -19,7 +19,8 @@ import {
   TooltipTrigger,
 } from "@radix-ui/react-tooltip";
 import { Badge } from "@/components/ui/badge.tsx";
-import { getResumeStatusColor } from "@/utils/tagColorMapper.ts";
+import { getResumeStatusColor, getResumeStatusLabel, getResumeStatusIcon } from "@/utils/tagColorMapper.ts";
+
 
 interface ResumeTableProps {
   resumes: ResumeForDisplayResponseDto[];
@@ -35,15 +36,12 @@ export function ResumeTable({
   theme = "blue",
 }: ResumeTableProps) {
   return (
-    <div className={`overflow-hidden rounded-lg border border-${theme}-600`}>
+    <div className={`overflow-auto rounded-lg border border-${theme}-600`} style={{ maxHeight: 'calc(100vh - 380px)' }}>
       <Table>
         <TableHeader
           className={`${theme === "blue" ? "bg-blue-600" : "bg-purple-600"} text-white`}
         >
           <TableRow>
-            <TableHead className="text-center font-bold text-white">
-              ID
-            </TableHead>
             <TableHead className="text-center font-bold text-white">
               Logo
             </TableHead>
@@ -73,7 +71,7 @@ export function ResumeTable({
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={9}>
+              <TableCell colSpan={8}>
                 <div className="flex justify-center py-6">
                   <LoadingSpinner />
                 </div>
@@ -81,7 +79,7 @@ export function ResumeTable({
             </TableRow>
           ) : resumes.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9}>
+              <TableCell colSpan={8}>
                 <EmptyState
                   title="Không tìm thấy hồ sơ xin việc nào"
                   description="Chưa có ai nộp hồ sơ cả"
@@ -94,13 +92,12 @@ export function ResumeTable({
           ) : (
             resumes.map((resume) => (
               <TableRow key={resume.id}>
-                <TableCell className="text-center">{resume.id}</TableCell>
                 <TableCell className="text-center">
                   {resume.company.logoUrl && (
                     <img
                       src={resume.company.logoUrl}
                       alt={resume.company.name}
-                      className="h-14 w-14 rounded-md border bg-white object-contain shadow-sm"
+                      className="h-10 w-10 rounded-md border bg-white object-contain shadow-sm"
                     />
                   )}
                 </TableCell>
@@ -120,8 +117,9 @@ export function ResumeTable({
                   {formatISO(resume.updatedAt)}
                 </TableCell>
                 <TableCell className="text-center">
-                  <Badge className={getResumeStatusColor(resume.status)}>
-                    {resume.status}
+                  <Badge className={`${getResumeStatusColor(resume.status)} font-medium transition-colors duration-200`}>
+                    <span className="mr-1.5 text-[10px]">{getResumeStatusIcon(resume.status)}</span>
+                    {getResumeStatusLabel(resume.status)}
                   </Badge>
                 </TableCell>
                 <TableCell>

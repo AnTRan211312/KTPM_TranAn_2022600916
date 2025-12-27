@@ -30,13 +30,10 @@ export function UserTable({
   onDelete,
 }: UserTableProps) {
   return (
-    <div className="overflow-hidden rounded-lg border border-blue-600">
+    <div className="overflow-auto rounded-lg border border-blue-600" style={{ maxHeight: 'calc(100vh - 300px)' }}>
       <Table>
         <TableHeader className="bg-blue-600 text-white">
           <TableRow>
-            <TableHead className="text-center font-bold text-white">
-              ID
-            </TableHead>
             <TableHead className="text-center font-bold text-white">
               Tên người dùng
             </TableHead>
@@ -57,7 +54,7 @@ export function UserTable({
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={6}>
+              <TableCell colSpan={5}>
                 <div className="flex justify-center py-6">
                   <LoadingSpinner />
                 </div>
@@ -65,7 +62,7 @@ export function UserTable({
             </TableRow>
           ) : users.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6}>
+              <TableCell colSpan={5}>
                 <EmptyState
                   title="Không tìm thấy người dùng nào"
                   description="Thử thay đổi tiêu chí tìm kiếm hoặc thêm người dùng mới"
@@ -78,7 +75,6 @@ export function UserTable({
           ) : (
             users.map((user) => (
               <TableRow key={user.id}>
-                <TableCell className="text-center">{user.id}</TableCell>
                 <TableCell className="text-center">{user.name}</TableCell>
                 <TableCell className="text-center">{user.email}</TableCell>
                 <TableCell className="text-center">

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
+import java.util.Map;
 
 public interface JobService {
     Page<JobResponseDto> findAllJobs(Specification<Job> spec, Pageable pageable);
@@ -25,4 +26,10 @@ public interface JobService {
     JobResponseDto deleteJobByIdForRecruiterCompany(Long id);
 
     List<JobResponseDto> findJobByCompanyId(Long id);
+
+    // Thống kê công việc theo trình độ
+    Map<String, Long> getJobStatsByLevel();
+
+    // Thống kê công việc theo trình độ cho công ty của Recruiter
+    Map<String, Long> getJobStatsByLevelForRecruiterCompany();
 }

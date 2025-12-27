@@ -1,6 +1,6 @@
 package com.TranAn.BackEnd_Works.dto.request.job;
 
-
+import com.TranAn.BackEnd_Works.model.constant.JobStatus;
 import com.TranAn.BackEnd_Works.model.constant.Level;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -43,7 +43,7 @@ public class JobRequestDto {
     private Instant endDate;
 
     @NotNull(message = "Trạng thái không được để trống")
-    private Boolean active;
+    private JobStatus status;
 
     @NotNull(message = "Công ty không được để trống")
     @Valid
@@ -58,7 +58,7 @@ public class JobRequestDto {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CompanyId {
-        //        @NotNull(message = "ID công ty không được để trống")
+        // @NotNull(message = "ID công ty không được để trống")
         private Long id;
     }
 

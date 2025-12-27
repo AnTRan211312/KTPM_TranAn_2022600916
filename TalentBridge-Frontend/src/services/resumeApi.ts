@@ -9,6 +9,29 @@ import type {
   UpdateResumeStatusRequestDto,
 } from "@/types/resume";
 
+// Types cho stats
+export interface ResumeStatusStats {
+  PENDING: number;
+  REVIEWING: number;
+  APPROVED: number;
+  REJECTED: number;
+}
+
+// API lấy thống kê status của resume
+export const getResumeStatsByStatus = () => {
+  return axiosClient.get<ApiResponse<ResumeStatusStats>>("/resumes/stats/status");
+};
+
+// API lấy thống kê status của resume cho công ty của Recruiter
+export const getResumeStatsByStatusForRecruiterCompany = () => {
+  return axiosClient.get<ApiResponse<ResumeStatusStats>>("/resumes/company/stats/status");
+};
+
+// API kiểm tra user đã nộp CV cho job này chưa
+export const checkApplied = (jobId: number) => {
+  return axiosClient.get<ApiResponse<boolean>>(`/resumes/check-applied/${jobId}`);
+};
+
 export const saveResume = (formData: FormData) => {
   return axiosClient.post("/resumes", formData, {
     headers: {
@@ -21,6 +44,7 @@ export const findAllResumes = ({
   page = 0,
   size = 5,
   filter,
+  sort,
 }: PaginationParams) => {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -28,6 +52,7 @@ export const findAllResumes = ({
   });
 
   if (filter) params.append("filter", filter);
+  if (sort) params.append("sort", sort);
 
   return axiosClient.get<
     ApiResponse<PageResponseDto<ResumeForDisplayResponseDto>>
@@ -38,6 +63,7 @@ export const findAllResumesForRecruiterCompany = ({
   page = 0,
   size = 5,
   filter,
+  sort,
 }: PaginationParams) => {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -45,6 +71,7 @@ export const findAllResumesForRecruiterCompany = ({
   });
 
   if (filter) params.append("filter", filter);
+  if (sort) params.append("sort", sort);
 
   return axiosClient.get<
     ApiResponse<PageResponseDto<ResumeForDisplayResponseDto>>
@@ -94,3 +121,33 @@ export const updateResumeStatusForRecruiterCompany = (
   );
 };
 
+// Types for CV Analysis
+export interface CVAnalysisResponse {
+  matchScore: number;
+  strengths: string[];
+  weaknesses: string[];
+  suggestions: string[];
+  summary: string;
+  jobName: string;
+  resumeId?: number;
+}
+
+// API phân tích CV đã nộp (dành cho Recruiter)
+export const analyzeResume = (resumeId: number) => {
+  return axiosClient.post<ApiResponse<CVAnalysisResponse>>(
+    `/resumes/${resumeId}/analyze`,
+  );
+};
+
+// API phân tích CV preview trước khi nộp (dành cho User)
+export const analyzeResumePreview = (formData: FormData, jobId: number) => {
+  return axiosClient.post<ApiResponse<CVAnalysisResponse>>(
+    `/resumes/analyze-preview?jobId=${jobId}`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    },
+  );
+};

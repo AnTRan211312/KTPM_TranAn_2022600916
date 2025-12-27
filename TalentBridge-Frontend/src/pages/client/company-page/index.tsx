@@ -70,7 +70,7 @@ export default function CompanyClientPage() {
     setSearchAddress("");
     setCurrentPage(1);
 
-    await fetchCompanies(currentPage, itemsPerPage, searchName, searchAddress);
+    await fetchCompanies(1, itemsPerPage, "", "");
   };
 
   return (

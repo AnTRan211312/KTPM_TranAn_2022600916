@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import java.time.Instant;
 import java.util.List;
 
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,7 +20,7 @@ public class JobResponseDto {
     private String description;
     private Instant startDate;
     private Instant endDate;
-    private Boolean active;
+    private String status;
 
     private CompanyDto company;
     private List<SkillDto> skills;

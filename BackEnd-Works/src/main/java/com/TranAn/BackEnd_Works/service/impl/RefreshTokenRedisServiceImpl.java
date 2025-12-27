@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenRedisServiceImpl implements RefreshTokenRedisService {
@@ -30,16 +29,14 @@ public class RefreshTokenRedisServiceImpl implements RefreshTokenRedisService {
     @Override
     public void saveRefreshToken(
             String token, String userId,
-            SessionMetaRequest sessionMetaRequest, Duration expire
-    ) {
+            SessionMetaRequest sessionMetaRequest, Duration expire) {
         String sessionId = buildKey(token, userId);
         SessionMeta sessionMeta = new SessionMeta(
                 sessionId,
                 sessionMetaRequest.getDeviceName(),
                 sessionMetaRequest.getDeviceType(),
                 sessionMetaRequest.getUserAgent(),
-                Instant.now()
-        );
+                Instant.now());
 
         redisSessionMetaTemplate.opsForValue().set(sessionId, sessionMeta, expire);
     }
@@ -64,16 +61,24 @@ public class RefreshTokenRedisServiceImpl implements RefreshTokenRedisService {
         String keyPattern = "auth::refresh_token:" + userId + ":*";
         Set<String> keys = redisSessionMetaTemplate.keys(keyPattern);
 
-        if (keys == null || keys.isEmpty()) return Collections.emptyList();
-        String currentTokenHash = DigestUtils.sha256Hex(currentRefreshToken);
+        if (keys == null || keys.isEmpty())
+            return Collections.emptyList();
+
+        // Xử lý trường hợp currentRefreshToken là null (không có cookie)
+        // Khi không có cookie, không thể xác định session hiện tại
+        String currentTokenHash = (currentRefreshToken != null && !currentRefreshToken.isBlank())
+                ? DigestUtils.sha256Hex(currentRefreshToken)
+                : null;
 
         List<SessionMetaResponse> sessionMetas = new ArrayList<>();
         for (String key : keys) {
             SessionMeta meta = redisSessionMetaTemplate.opsForValue().get(key);
-            if (meta == null) continue;
+            if (meta == null)
+                continue;
 
             String keyHash = key.substring(key.lastIndexOf(":") + 1);
-            boolean isCurrent = currentTokenHash.equals(keyHash);
+            // Chỉ đánh dấu isCurrent = true nếu có cookie và hash khớp
+            boolean isCurrent = currentTokenHash != null && currentTokenHash.equals(keyHash);
 
             SessionMetaResponse sessionMetaResponse = new SessionMetaResponse(
                     meta.getSessionId(),
@@ -81,12 +86,10 @@ public class RefreshTokenRedisServiceImpl implements RefreshTokenRedisService {
                     meta.getDeviceType(),
                     meta.getUserAgent(),
                     meta.getLoginAt(),
-                    isCurrent
-            );
+                    isCurrent);
             sessionMetas.add(sessionMetaResponse);
         }
         return sessionMetas;
     }
 
 }
-

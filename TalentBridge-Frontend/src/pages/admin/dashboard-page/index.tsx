@@ -110,12 +110,7 @@ export default function DashboardPage() {
 
       {/* Functionalities Overview */}
       <div className="space-y-6">
-        <div className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-blue-600" />
-          <h2 className="text-xl font-semibold text-gray-900">
-            Chức năng hệ thống
-          </h2>
-        </div>
+    
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {functionalities.map((func, index) => (

@@ -10,17 +10,21 @@ import com.TranAn.BackEnd_Works.repository.ChatMessageRepository;
 import com.TranAn.BackEnd_Works.repository.UserRepository;
 import com.TranAn.BackEnd_Works.service.ChatRedisService;
 import com.TranAn.BackEnd_Works.service.ChatService;
+import com.TranAn.BackEnd_Works.service.S3Service;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MimeTypeUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,13 +36,22 @@ public class ChatServiceImpl implements ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRedisService chatRedisService;
     private final UserRepository userRepository;
+    private final S3Service s3Service;
+    private final ObjectMapper objectMapper;
 
     private static final int MAX_HISTORY_MESSAGES = 50;
     private static final Duration REDIS_EXPIRE = Duration.ofHours(24);
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB for images
+    private static final long MAX_PDF_SIZE = 20 * 1024 * 1024; // 20MB for PDFs
+    private static final int MAX_FILES = 5;
+    private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of(
+            "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp");
+    private static final Set<String> ALLOWED_DOCUMENT_TYPES = Set.of(
+            "application/pdf", "text/plain", "text/markdown");
 
     @Override
     @Transactional
-    public String generation(ChatRequest request, String userEmail) {
+    public String generation(ChatRequest request, List<MultipartFile> files, String userEmail) {
 
         // 1. Lấy thông tin user
         User user = userRepository.findByEmail(userEmail)
@@ -63,12 +76,41 @@ public class ChatServiceImpl implements ChatService {
             }
         }
 
-        // 4. Tạo và lưu message của user
+        // 4. Xử lý file uploads (nếu có)
+        List<String> uploadedUrls = new ArrayList<>();
+        List<String> fileTypes = new ArrayList<>();
+
+        if (files != null && !files.isEmpty()) {
+            validateFiles(files);
+
+            for (MultipartFile file : files) {
+                String contentType = file.getContentType();
+                String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+                String folder = "chat-attachments";
+
+                // Upload to S3 (don't get public URL yet)
+                String s3Key = s3Service.uploadFile(file, folder, fileName, false);
+
+                // Generate presigned URL valid for 1 hour (enough for AI to download)
+                String presignedUrl = s3Service.generatePresignedUrl(
+                        folder + "/" + fileName,
+                        Duration.ofHours(1));
+
+                uploadedUrls.add(presignedUrl);
+                fileTypes.add(contentType);
+
+                log.info("Uploaded file {} to S3 with presigned URL", fileName);
+            }
+        }
+
+        // 5. Tạo và lưu message của user
         ChatMessage userMessage = ChatMessage.builder()
                 .user(user)
                 .sessionId(request.getSessionId())
                 .role(MessageRole.USER)
                 .content(request.getQuestion())
+                .attachmentUrls(uploadedUrls.isEmpty() ? null : convertListToJson(uploadedUrls))
+                .attachmentTypes(fileTypes.isEmpty() ? null : String.join(",", fileTypes))
                 .build();
 
         // Lưu vào Database
@@ -77,21 +119,46 @@ public class ChatServiceImpl implements ChatService {
         // Thêm vào Redis
         chatRedisService.addMessage(userId, request.getSessionId(), userMessage, REDIS_EXPIRE);
 
-        log.info("User {} sent message in session {}", user.getEmail(), request.getSessionId());
+        log.info("User {} sent message in session {} with {} files",
+                user.getEmail(), request.getSessionId(), uploadedUrls.size());
 
-        // 5. Xây dựng prompt với lịch sử
+        // 6. Xây dựng prompt với lịch sử
         String promptWithHistory = buildPromptWithHistory(history, request.getQuestion());
 
-        // 6. Gọi AI
+        // 7. Gọi AI với multimodal support
         String response;
         try {
-            response = chatClient.prompt()
-                    .user(promptWithHistory)
-                    .call()
-                    .content();
+            if (!uploadedUrls.isEmpty()) {
+                // Multimodal prompt with files
+                response = chatClient.prompt()
+                        .user(u -> {
+                            u.text(promptWithHistory);
+                            // Add files as media
+                            for (int i = 0; i < uploadedUrls.size(); i++) {
+                                String url = uploadedUrls.get(i);
+                                String mimeType = fileTypes.get(i);
+                                try {
+                                    if (ALLOWED_IMAGE_TYPES.contains(mimeType)) {
+                                        u.media(MimeTypeUtils.parseMimeType(mimeType), new UrlResource(url));
+                                    }
+                                    // PDFs and documents are already described in text
+                                } catch (Exception e) {
+                                    log.warn("Could not add file as media: {}", url, e);
+                                }
+                            }
+                        })
+                        .call()
+                        .content();
+            } else {
+                // Text-only prompt
+                response = chatClient.prompt()
+                        .user(promptWithHistory)
+                        .call()
+                        .content();
+            }
         } catch (Exception e) {
             log.error("Error calling AI service", e);
-            throw new RuntimeException("Không thể kết nối đến AI service. Vui lòng thử lại sau.");
+            throw new RuntimeException("Lỗi kết nối AI: " + e.getMessage(), e);
         }
 
         // 7. Tạo và lưu response của AI
@@ -259,18 +326,76 @@ public class ChatServiceImpl implements ChatService {
 
     // Helper: Cắt message quá dài
     private String truncateMessage(String message, int maxLength) {
-        if (message == null) return "";
-        if (message.length() <= maxLength) return message;
+        if (message == null)
+            return "";
+        if (message.length() <= maxLength)
+            return message;
         return message.substring(0, maxLength) + "...";
     }
 
+    // Helper: Validate uploaded files
+    private void validateFiles(List<MultipartFile> files) {
+        if (files.size() > MAX_FILES) {
+            throw new IllegalArgumentException("Không thể tải lên quá " + MAX_FILES + " files");
+        }
+
+        for (MultipartFile file : files) {
+            String contentType = file.getContentType();
+            long fileSize = file.getSize();
+
+            // Check file type
+            if (contentType == null ||
+                    (!ALLOWED_IMAGE_TYPES.contains(contentType) && !ALLOWED_DOCUMENT_TYPES.contains(contentType))) {
+                throw new IllegalArgumentException("Loại file không được hỗ trợ: " + contentType);
+            }
+
+            // Check file size
+            if (ALLOWED_IMAGE_TYPES.contains(contentType) && fileSize > MAX_FILE_SIZE) {
+                throw new IllegalArgumentException("Ảnh không được vượt quá 10MB");
+            }
+            if (ALLOWED_DOCUMENT_TYPES.contains(contentType) && fileSize > MAX_PDF_SIZE) {
+                throw new IllegalArgumentException("Tài liệu không được vượt quá 20MB");
+            }
+        }
+    }
+
+    // Helper: Convert List to JSON string
+    private String convertListToJson(List<String> list) {
+        try {
+            return objectMapper.writeValueAsString(list);
+        } catch (JsonProcessingException e) {
+            log.error("Error converting list to JSON", e);
+            return "[]";
+        }
+    }
+
+    // Helper: Convert JSON string to List
+    private List<String> convertJsonToList(String json) {
+        if (json == null || json.isEmpty()) {
+            return new ArrayList<>();
+        }
+        try {
+            return objectMapper.readValue(json, List.class);
+        } catch (JsonProcessingException e) {
+            log.error("Error parsing JSON to list", e);
+            return new ArrayList<>();
+        }
+    }
+
     private ChatMessageDto convertToDto(ChatMessage message) {
+        List<String> attachmentUrls = convertJsonToList(message.getAttachmentUrls());
+        List<String> attachmentTypes = message.getAttachmentTypes() != null
+                ? Arrays.asList(message.getAttachmentTypes().split(","))
+                : new ArrayList<>();
+
         return ChatMessageDto.builder()
                 .id(message.getId())
                 .role(message.getRole())
                 .content(message.getContent())
                 .createdAt(message.getCreatedAt())
                 .createdBy(message.getCreatedBy())
+                .attachmentUrls(attachmentUrls.isEmpty() ? null : attachmentUrls)
+                .attachmentTypes(attachmentTypes.isEmpty() ? null : attachmentTypes)
                 .build();
     }
 }

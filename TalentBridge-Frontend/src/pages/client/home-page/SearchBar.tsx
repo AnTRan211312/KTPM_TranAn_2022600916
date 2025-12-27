@@ -11,7 +11,7 @@ const SearchBar = () => {
     if (e) {
       e.preventDefault();
     }
-    
+
     // Điều hướng đến trang jobs với query parameters
     const params = new URLSearchParams();
     if (keyword.trim()) {
@@ -20,7 +20,7 @@ const SearchBar = () => {
     if (location.trim()) {
       params.set("location", location.trim());
     }
-    
+
     const queryString = params.toString();
     navigate(`/jobs${queryString ? `?${queryString}` : ""}`);
   };
@@ -65,9 +65,10 @@ const SearchBar = () => {
           />
           <datalist id="location-options">
             <option value="TP. Hồ Chí Minh" />
-            <option value="Hà Chí Minh" />
             <option value="Hà Nội" />
             <option value="Đà Nẵng" />
+            <option value="Bình Dương" />
+            <option value="Cần Thơ" />
           </datalist>
         </div>
 

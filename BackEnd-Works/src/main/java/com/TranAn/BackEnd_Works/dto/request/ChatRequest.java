@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class ChatRequest {
 
     @NotBlank(message = "Câu hỏi không được để trống")
-    @Size(max = 5000, message = "Câu hỏi không được quá 5000 ký tự")
+    @Size(max = 500, message = "Câu hỏi không được quá 5000 ký tự")
     private String question;
 
     @NotBlank(message = "SessionId không được để trống")

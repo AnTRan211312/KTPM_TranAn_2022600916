@@ -71,6 +71,7 @@ public class RoleServiceImpl implements RoleService {
                 currentName != null
                         && !currentName.equalsIgnoreCase("ADMIN")
                         && !currentName.equalsIgnoreCase("USER")
+                        && !currentName.equalsIgnoreCase("RECRUITER")
         ) role.setName(defaultRoleRequestDto.getName());
 
         role.setDescription(defaultRoleRequestDto.getDescription());

@@ -1,6 +1,5 @@
 package com.TranAn.BackEnd_Works.controller;
 
-
 import com.TranAn.BackEnd_Works.annotation.ApiMessage;
 import com.TranAn.BackEnd_Works.dto.request.auth.SessionMetaRequest;
 import com.TranAn.BackEnd_Works.dto.request.auth.UserLoginRequestDto;
@@ -12,8 +11,6 @@ import com.TranAn.BackEnd_Works.dto.response.user.UserDetailsResponseDto;
 import com.TranAn.BackEnd_Works.dto.response.user.UserSessionResponseDto;
 import com.TranAn.BackEnd_Works.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
-
-
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,8 +35,7 @@ public class AuthController {
     @Operation(summary = "người dùng đăng ký")
     @SecurityRequirements()
     public ResponseEntity<UserSessionResponseDto> register(
-            @Valid
-            @RequestBody UserRegisterRequestDto userRegisterRequestDto) {
+            @Valid @RequestBody UserRegisterRequestDto userRegisterRequestDto) {
         return ResponseEntity.ok(authService.handleRegister(userRegisterRequestDto));
     }
 
@@ -48,11 +44,10 @@ public class AuthController {
     @Operation(summary = "người dùng đăng nhập")
     @SecurityRequirements()
     public ResponseEntity<AuthTokenResponseDto> login(
-            @Valid @RequestBody UserLoginRequestDto userLoginRequestDto
-    ){
+            @Valid @RequestBody UserLoginRequestDto userLoginRequestDto) {
         AuthResult authResult = authService.handleLogin(userLoginRequestDto);
         AuthTokenResponseDto authTokenResponseDto = authResult.getAuthTokenResponseDto();
-        ResponseCookie responseCookie =authResult.getResponseCookie();
+        ResponseCookie responseCookie = authResult.getResponseCookie();
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, responseCookie.toString())
                 .body(authTokenResponseDto);
     }
@@ -62,13 +57,12 @@ public class AuthController {
     @Operation(summary = "người dùng đăng xuât")
     @SecurityRequirements()
     public ResponseEntity<Void> logout(
-            @CookieValue(value = "refresh_token",required = false) String refreshToken
-    ){
+            @CookieValue(value = "refresh_token", required = false) String refreshToken) {
         ResponseCookie responseCookie = authService.handleLogout(refreshToken);
-        return ResponseEntity.ok().
-                header(HttpHeaders.SET_COOKIE, responseCookie.toString())
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, responseCookie.toString())
                 .build();
     }
+
     @GetMapping("/me")
     @ApiMessage(value = "Trả về thông tin phiên đăng nhập của người dùng hiện tại")
     @Operation(summary = "Lấy thông tin phiên đăng nhập của người dùng hiện tại")
@@ -88,8 +82,10 @@ public class AuthController {
     @Operation(summary = "Cấp lại access token và refresh token mới")
     public ResponseEntity<AuthTokenResponseDto> refreshToken(
             @CookieValue(value = "refresh_token") String refreshToken,
-            @RequestBody SessionMetaRequest sessionMetaRequest
-    ) {
+            @RequestBody SessionMetaRequest sessionMetaRequest) {
+        System.out.println("DEBUG: /auth/refresh-token called");
+        System.out.println("DEBUG: Cookie refresh_token is " + (refreshToken == null ? "NULL" : "PRESENT"));
+
         AuthResult authResult = authService.handleRefresh(refreshToken, sessionMetaRequest);
 
         AuthTokenResponseDto authTokenResponseDto = authResult.getAuthTokenResponseDto();
@@ -100,11 +96,12 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
                 .body(authTokenResponseDto);
     }
+
     @GetMapping("/sessions")
     @ApiMessage(value = "Lấy session")
     @Operation(summary = "Lấy tất cả phiên đăng nhập của người dùng hiện tại")
-    public ResponseEntity<List<SessionMetaResponse>> getAllSelfSessionMetas(@CookieValue(value = "refresh_token") String refreshToken) {
-        return ResponseEntity.ok(authService.getAllSelfSessionMetas(refreshToken));
+    public ResponseEntity<List<SessionMetaResponse>> getAllSelfSessionMetas() {
+        return ResponseEntity.ok(authService.getAllSelfSessionMetas());
     }
 
     @DeleteMapping("/sessions/{sessionId}")
@@ -115,6 +112,5 @@ public class AuthController {
 
         return ResponseEntity.ok().build();
     }
-
 
 }

@@ -15,6 +15,7 @@ import UserInfoPage from "@/pages/user/user-info-page";
 import UserResumePage from "@/pages/user/user-resume-page";
 import UserSessionPage from "@/pages/user/user-session-page";
 import UserChatPage from "@/pages/user/user-chat-page";
+import PaymentResultPage from "@/pages/payment/PaymentResultPage";
 
 // ADMIN PAGE
 import AdminPage from "@/pages/admin";
@@ -63,6 +64,8 @@ const router = createBrowserRouter([
       { path: "jobs", element: <JobClientPage /> },
       { path: "jobs/:id", element: <JobDetailsClientPage /> },
       { path: "chat", element: <UserChatPage /> },
+      { path: "payment/result", element: <PaymentResultPage /> },
+
       {
         path: "user",
         element: <UserPage />,

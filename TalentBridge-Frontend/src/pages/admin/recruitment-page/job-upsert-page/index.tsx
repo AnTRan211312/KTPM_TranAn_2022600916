@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select.tsx";
-import { Switch } from "@/components/ui/switch.tsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import {
   Breadcrumb,
@@ -24,7 +23,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import RichTextEditor from "@/components/custom/RichText/index-editor.tsx";
 import SkillSelection from "@/pages/commons/SkillSelection.tsx";
-import type { CompanySummary, JobUpsertDto, SkillSummary } from "@/types/job";
+import type { CompanySummary, JobUpsertDto, JobStatus, SkillSummary } from "@/types/job";
 import CompanySelection from "@/pages/commons/CompanySelection.tsx";
 import { getErrorMessage } from "@/features/slices/auth/authThunk.ts";
 import { toast } from "sonner";
@@ -37,7 +36,7 @@ const levels = [
   { value: "FRESHER", label: "Fresher" },
   { value: "MIDDLE", label: "Middle" },
   { value: "SENIOR", label: "Senior" },
-   { value: "LEADER", label: "Leader" },
+  { value: "LEADER", label: "Leader" },
 ];
 
 export default function JobUpsertPage() {
@@ -62,7 +61,7 @@ export default function JobUpsertPage() {
     description: "",
     startDate: "",
     endDate: "",
-    active: true,
+    status: "ACTIVE" as JobStatus,
     company: null,
     skills: [],
   });
@@ -359,18 +358,21 @@ export default function JobUpsertPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="status">Trạng thái</Label>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="status"
-                    checked={formData.active}
-                    onCheckedChange={(checked) =>
-                      handleInputChange("active", checked)
-                    }
-                  />
-                  <Label htmlFor="status" className="text-sm font-medium">
-                    {formData.active ? "ACTIVE" : "INACTIVE"}
-                  </Label>
-                </div>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) =>
+                    handleInputChange("status", value as JobStatus)
+                  }
+                >
+                  <SelectTrigger className="w-fit">
+                    <SelectValue placeholder="Chọn trạng thái" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ACTIVE">Đang tuyển</SelectItem>
+                    <SelectItem value="PAUSED">Tạm dừng</SelectItem>
+                    <SelectItem value="DRAFT">Nháp</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

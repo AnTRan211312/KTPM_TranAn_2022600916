@@ -12,34 +12,43 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
+
 public interface ResumeService {
 
-    CreateResumeResponseDto saveResume(
-            ResumeRequestDto resumeRequestDto,
-            MultipartFile pdfFile);
+        CreateResumeResponseDto saveResume(
+                        ResumeRequestDto resumeRequestDto,
+                        MultipartFile pdfFile);
 
-    Page<ResumeForDisplayResponseDto> findAllResumesForRecruiterCompany(
-            Specification<Resume> spec,
-            Pageable pageable
-    );
+        Page<ResumeForDisplayResponseDto> findAllResumesForRecruiterCompany(
+                        Specification<Resume> spec,
+                        Pageable pageable);
 
-    Page<ResumeForDisplayResponseDto> findSelfResumes(
-            Specification<Resume> spec,
-            Pageable pageable);
+        Page<ResumeForDisplayResponseDto> findSelfResumes(
+                        Specification<Resume> spec,
+                        Pageable pageable);
 
-    DefaultResumeResponseDto removeSelfResumeByJobId(Long jobId);
+        DefaultResumeResponseDto removeSelfResumeByJobId(Long jobId);
 
-    DefaultResumeResponseDto updateSelfResumeFile(Long id, MultipartFile pdfFile);
+        DefaultResumeResponseDto updateSelfResumeFile(Long id, MultipartFile pdfFile);
 
-    GetResumeFileResponseDto getResumeFileUrl(Long id);
+        GetResumeFileResponseDto getResumeFileUrl(Long id);
 
-    Page<ResumeForDisplayResponseDto> findAllResumes(
-            Specification<Resume> spec,
-            Pageable pageable
-    );
+        Page<ResumeForDisplayResponseDto> findAllResumes(
+                        Specification<Resume> spec,
+                        Pageable pageable);
 
-    DefaultResumeResponseDto updateResumeStatus(UpdateResumeStatusRequestDto updateResumeStatusRequestDto);
+        DefaultResumeResponseDto updateResumeStatus(UpdateResumeStatusRequestDto updateResumeStatusRequestDto);
 
-    DefaultResumeResponseDto updateResumeStatusForRecruiterCompany(
-            UpdateResumeStatusRequestDto updateResumeStatusRequestDto);
+        DefaultResumeResponseDto updateResumeStatusForRecruiterCompany(
+                        UpdateResumeStatusRequestDto updateResumeStatusRequestDto);
+
+        // Thống kê hồ sơ theo trạng thái
+        Map<String, Long> getResumeStatsByStatus();
+
+        // Thống kê hồ sơ theo trạng thái cho công ty của Recruiter
+        Map<String, Long> getResumeStatsByStatusForRecruiterCompany();
+
+        // Kiểm tra user đã nộp CV cho job này chưa
+        boolean hasApplied(Long jobId);
 }

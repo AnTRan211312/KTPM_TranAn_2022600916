@@ -1,4 +1,4 @@
-import { Viewer, type Plugin } from "@react-pdf-viewer/core";
+import { Viewer, type Plugin, SpecialZoomLevel } from "@react-pdf-viewer/core";
 import { toolbarPlugin } from "@react-pdf-viewer/toolbar";
 
 import "@react-pdf-viewer/core/lib/styles/index.css";
@@ -7,11 +7,13 @@ import "@react-pdf-viewer/toolbar/lib/styles/index.css";
 interface PDFViewerProps {
   fileUrl: string;
   className?: string;
+  defaultScale?: number | SpecialZoomLevel;
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({
   fileUrl,
   className = "h-full w-full",
+  defaultScale = SpecialZoomLevel.PageFit,
 }) => {
   const toolbarPluginInstance = toolbarPlugin();
   const { Toolbar } = toolbarPluginInstance;
@@ -27,7 +29,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       </div>
 
       <div className="flex-1 overflow-hidden">
-        <Viewer fileUrl={fileUrl} plugins={[toolbarPluginInstance as Plugin]} />
+        <Viewer
+          fileUrl={fileUrl}
+          plugins={[toolbarPluginInstance as Plugin]}
+          defaultScale={defaultScale}
+        />
       </div>
     </div>
   );

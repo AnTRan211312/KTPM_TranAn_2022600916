@@ -11,9 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResetPasswordRequestDto {
-
-    @NotBlank(message = "Email không được để trống")
-    @Email(message = "Email không hợp lệ")
+    @NotBlank(message = "Email người dùng không được để trống")
+    @Email(
+            message = "Định dạng email không hợp lệ",
+            regexp = "^[\\w\\-.]+@([\\w\\-]+\\.)+[\\w\\-]{2,4}$"
+    )
     private String email;
 
     @NotBlank(message = "Mã OTP không được để trống")

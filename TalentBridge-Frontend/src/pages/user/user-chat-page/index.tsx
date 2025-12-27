@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   clearChatHistory,
   createChatSession,
@@ -24,7 +23,7 @@ export default function UserChatPage() {
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Load sessions khi component mount
   useEffect(() => {
@@ -43,19 +42,18 @@ export default function UserChatPage() {
   // Auto scroll to bottom chỉ khi user đang ở gần bottom hoặc có message mới
   useEffect(() => {
     // Chỉ scroll nếu user đang ở gần bottom (trong vòng 100px từ bottom)
-    if (scrollAreaRef.current) {
-      const viewport = scrollAreaRef.current.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement;
-      if (viewport) {
-        const isNearBottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight < 100;
-        // Chỉ scroll nếu đang ở gần bottom hoặc đây là message đầu tiên
-        if (isNearBottom || messages.length <= 2) {
-          setTimeout(() => {
-            viewport.scrollTo({
-              top: viewport.scrollHeight,
-              behavior: "smooth",
-            });
-          }, 100);
-        }
+    if (scrollRef.current) {
+      const div = scrollRef.current;
+      const isNearBottom = div.scrollHeight - div.scrollTop - div.clientHeight < 100;
+      
+      // Chỉ scroll nếu đang ở gần bottom hoặc đây là message đầu tiên
+      if (isNearBottom || messages.length <= 2) {
+        setTimeout(() => {
+          div.scrollTo({
+            top: div.scrollHeight,
+            behavior: "smooth",
+          });
+        }, 100);
       }
     }
   }, [messages]);
@@ -211,16 +209,17 @@ export default function UserChatPage() {
   };
 
   return (
-    <div className="flex min-h-0 flex-1 gap-4 overflow-hidden">
+    <div className="flex h-[calc(100dvh-64px)] w-full gap-4 overflow-hidden bg-gray-50/30">
       {/* Sidebar - Danh sách sessions */}
-      <Card className="flex w-80 flex-shrink-0 flex-col overflow-hidden">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Cuộc trò chuyện</CardTitle>
-            <div className="flex gap-2">
+      <Card className="hidden md:flex w-80 flex-shrink-0 flex-col overflow-hidden border-r border-gray-200 shadow-none rounded-none md:rounded-l-xl">
+        <CardHeader className="px-4 py-3 border-b">
+          <div className="flex items-center justify-between gap-2">
+            <CardTitle className="text-base font-bold text-gray-800">Lịch sử</CardTitle>
+            <div className="flex gap-1">
               <Button
                 size="sm"
                 variant="ghost"
+                className="h-8 w-8 text-gray-500"
                 onClick={() => setShowSettings(!showSettings)}
                 title="Cài đặt"
               >
@@ -230,13 +229,14 @@ export default function UserChatPage() {
                 size="sm"
                 onClick={handleCreateSession}
                 disabled={isCreatingSession}
+                className="h-8 bg-orange-600 text-white hover:bg-orange-700 px-3 text-xs font-medium"
               >
                 {isCreatingSession ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Mới
+                    <MessageSquare className="mr-1.5 h-3.5 w-3.5" />
+                    Chat mới
                   </>
                 )}
               </Button>
@@ -278,7 +278,7 @@ export default function UserChatPage() {
               </div>
             </div>
           )}
-          <ScrollArea className="flex-1">
+          <div className="flex-1 overflow-y-auto">
             {isLoadingSessions ? (
               <div className="flex items-center justify-center p-8">
                 <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
@@ -295,21 +295,21 @@ export default function UserChatPage() {
                   <div
                     key={session.sessionId}
                     onClick={() => setCurrentSessionId(session.sessionId)}
-                    className={`group cursor-pointer rounded-lg p-3 transition-colors ${
+                    className={`group cursor-pointer border-l-4 px-3 py-3 transition-all ${
                       currentSessionId === session.sessionId
-                        ? "bg-orange-100"
-                        : "hover:bg-gray-100"
+                        ? "border-orange-500 bg-orange-50"
+                        : "border-transparent hover:bg-gray-50"
                     }`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
-                        <p className="truncate text-sm font-medium text-gray-900">
+                        <p className={`truncate text-sm font-semibold ${currentSessionId === session.sessionId ? "text-orange-900" : "text-gray-900"}`}>
                           {session.firstMessage || "Cuộc trò chuyện mới"}
                         </p>
-                        <p className="mt-1 truncate text-xs text-gray-500">
+                        <p className="mt-1 truncate text-xs text-gray-500 font-normal">
                           {session.lastMessage || "Chưa có tin nhắn"}
                         </p>
-                        <div className="mt-1 flex items-center gap-2 text-xs text-gray-400">
+                        <div className="mt-2 flex items-center gap-2 text-[10px] font-medium text-gray-400">
                           <span>{session.messageCount} tin nhắn</span>
                           <span>•</span>
                           <span>{formatDate(session.lastMessageTime)}</span>
@@ -327,19 +327,24 @@ export default function UserChatPage() {
                 ))}
               </div>
             )}
-          </ScrollArea>
+          </div>
         </CardContent>
       </Card>
 
       {/* Main Chat Area */}
-      <Card className="flex-1 flex flex-col">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bot className="h-5 w-5" />
-            AI Assistant
-          </CardTitle>
+      <Card className="flex-1 flex flex-col shadow-sm border-0 bg-white/50">
+        <CardHeader className="border-b bg-white px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 border border-orange-100">
+              <img src="/web-logo.png" alt="Logo" className="h-6 w-6 object-contain" />
+            </div>
+            <div>
+              <CardTitle className="text-lg font-bold text-gray-800">TalentBridge AI</CardTitle>
+              <p className="text-xs font-medium text-gray-500">Trợ lý ảo hỗ trợ tìm việc & tuyển dụng</p>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent className="flex min-h-0 flex-1 flex-col p-0">
+        <CardContent className="flex min-h-0 flex-1 flex-col p-0 bg-white">
           {!currentSessionId ? (
             <div className="flex flex-1 items-center justify-center">
               <div className="text-center">
@@ -350,14 +355,14 @@ export default function UserChatPage() {
           ) : (
             <>
               {/* Messages Area */}
-              <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-                <ScrollArea
-                  ref={scrollAreaRef}
-                  className="h-full"
+              <div className="flex flex-1 flex-col overflow-hidden">
+                <div
+                  ref={scrollRef}
+                  className="flex-1 overflow-y-auto px-4 py-6 scroll-smooth"
                 >
-                  <div className="flex min-h-full flex-col justify-center px-4 py-4">
+                  <div className="flex min-h-full flex-col">
                     {isLoading && messages.length === 0 ? (
-                      <div className="flex items-center justify-center p-8">
+                      <div className="flex h-full items-center justify-center p-8">
                         <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
                       </div>
                     ) : messages.length === 0 ? (
@@ -366,7 +371,7 @@ export default function UserChatPage() {
                         <p className="text-gray-500">Bắt đầu cuộc trò chuyện với AI</p>
                       </div>
                     ) : (
-                      <div className="space-y-4">
+                      <div className="mx-auto w-full max-w-3xl space-y-6">
                         {messages.map((message) => (
                           <div
                             key={message.id}
@@ -374,23 +379,21 @@ export default function UserChatPage() {
                               message.role === "USER" ? "justify-end" : "justify-start"
                             }`}
                           >
-                            <div
-                              className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                                message.role === "USER"
-                                  ? "bg-orange-500 text-white"
-                                  : "bg-gray-100 text-gray-900"
-                              }`}
-                            >
-                              <p className="whitespace-pre-wrap">{message.content}</p>
-                              <p
-                                className={`mt-1 text-xs ${
+                            <div className={`flex max-w-[85%] flex-col ${message.role === "USER" ? "items-end ml-auto" : "items-start"}`}>
+                              <div
+                                className={`rounded-2xl px-5 py-3 shadow-sm ${
                                   message.role === "USER"
-                                    ? "text-orange-100"
-                                    : "text-gray-500"
+                                    ? "bg-gray-100 text-gray-900 rounded-br-sm"
+                                    : "bg-white border border-gray-100 text-gray-800 rounded-bl-sm"
                                 }`}
                               >
+                                <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
+                              </div>
+                              <span
+                                className="mt-1 px-1 text-[11px] font-medium text-gray-400"
+                              >
                                 {formatDate(message.createdAt)}
-                              </p>
+                              </span>
                             </div>
                           </div>
                         ))}
@@ -405,20 +408,20 @@ export default function UserChatPage() {
                       </div>
                     )}
                   </div>
-                </ScrollArea>
+                </div>
               </div>
 
               {/* Input Area */}
-              <div className="shrink-0 border-t bg-white p-4">
-                <form onSubmit={handleSendMessage} className="flex gap-2">
+              <div className="flex-none border-t border-gray-200 bg-white p-4 pb-6">
+                <form onSubmit={handleSendMessage} className="mx-auto flex max-w-3xl gap-2">
                   <Input
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     placeholder="Nhập câu hỏi của bạn..."
                     disabled={isLoading}
-                    className="flex-1"
+                    className="flex-1 rounded-full border-gray-300 bg-gray-50 px-4 py-5 text-sm shadow-sm focus:border-orange-500 focus:bg-white focus:ring-1 focus:ring-orange-500 transition-all"
                   />
-                  <Button type="submit" disabled={isLoading || !inputMessage.trim()}>
+                  <Button type="submit" disabled={isLoading || !inputMessage.trim()} className="h-12 w-12 rounded-full bg-orange-600 hover:bg-orange-700 shadow-sm">
                     {isLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
@@ -434,4 +437,3 @@ export default function UserChatPage() {
     </div>
   );
 }
-
