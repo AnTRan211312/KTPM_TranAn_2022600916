@@ -1,0 +1,52 @@
+# ===========================================
+# TalentBridge Project - Root .gitignore
+# ===========================================
+
+# =========================
+# IDE & Editor
+# =========================
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# =========================
+# Backend - Spring Boot
+# =========================
+BackEnd-Works/target/
+BackEnd-Works/build/
+BackEnd-Works/.mvn/wrapper/maven-wrapper.jar
+BackEnd-Works/*.log
+
+# Sensitive configuration files
+BackEnd-Works/src/main/resources/application.properties
+BackEnd-Works/src/main/resources/application_secret.properties
+
+# =========================
+# Frontend - React/Vite
+# =========================
+TalentBridge-Frontend/node_modules/
+TalentBridge-Frontend/dist/
+TalentBridge-Frontend/.env
+TalentBridge-Frontend/.env.local
+TalentBridge-Frontend/.env.*.local
+TalentBridge-Frontend/.env.production
+TalentBridge-Frontend/.env.development
+
+# =========================
+# OS Generated
+# =========================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# =========================
+# Logs & Temporary Files
+# =========================
+*.log
+logs/
+tmp/
+temp/
