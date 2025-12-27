@@ -1,76 +1,76 @@
-﻿# ðŸŒ‰ TalentBridge
+# TalentBridge
 
-> **Ná»n táº£ng tuyá»ƒn dá»¥ng tháº¿ há»‡ má»›i** - Káº¿t ná»‘i nhÃ  tuyá»ƒn dá»¥ng, á»©ng viÃªn vÃ  quáº£n trá»‹ viÃªn trong má»™t há»‡ sinh thÃ¡i tiá»‡n lá»£i, minh báº¡ch vÃ  báº£o máº­t.
+> **Nen tang tuyen dung the he moi** - Ket noi nha tuyen dung, ung vien va quan tri vien trong mot he sinh thai tien loi, minh bach va bao mat.
 
 ![TalentBridge Banner](img.png)
 
 ---
 
-## ðŸ“‹ Má»¥c Lá»¥c
+## Muc Luc
 
-- [Giá»›i Thiá»‡u](#-giá»›i-thiá»‡u)
-- [TÃ­nh NÄƒng](#-tÃ­nh-nÄƒng)
-- [CÃ´ng Nghá»‡](#-cÃ´ng-nghá»‡)
-- [CÃ i Äáº·t](#-cÃ i-Ä‘áº·t)
-- [Cáº¥u HÃ¬nh](#-cáº¥u-hÃ¬nh)
-- [HÆ°á»›ng Dáº«n Sá»­ Dá»¥ng](#-hÆ°á»›ng-dáº«n-sá»­-dá»¥ng)
-- [API Documentation](#-api-documentation)
-- [Screenshots](#-screenshots)
+- [Gioi Thieu](#gioi-thieu)
+- [Tinh Nang](#tinh-nang)
+- [Cong Nghe](#cong-nghe)
+- [Cai Dat](#cai-dat)
+- [Cau Hinh](#cau-hinh)
+- [Huong Dan Su Dung](#huong-dan-su-dung)
+- [API Documentation](#api-documentation)
+- [Screenshots](#screenshots)
 
 ---
 
-## ðŸŽ¯ Giá»›i Thiá»‡u
+## Gioi Thieu
 
-TalentBridge khÃ´ng chá»‰ Ä‘Æ¡n thuáº§n lÃ  website tra cá»©u viá»‡c lÃ m - Ä‘Ã¢y lÃ  ná»n táº£ng giÃºp tá»‘i Æ°u hÃ³a quy trÃ¬nh tuyá»ƒn dá»¥ng, nÃ¢ng cao tráº£i nghiá»‡m ngÆ°á»i dÃ¹ng vÃ  hiá»‡u quáº£ quáº£n lÃ½ cho táº¥t cáº£ cÃ¡c bÃªn.
+TalentBridge khong chi don thuan la website tra cuu viec lam - day la nen tang giup toi uu hoa quy trinh tuyen dung, nang cao trai nghiem nguoi dung va hieu qua quan ly cho tat ca cac ben.
 
-### ðŸ‘¥ 3 NhÃ³m NgÆ°á»i DÃ¹ng
+### 3 Nhom Nguoi Dung
 
-| Vai trÃ² | MÃ´ táº£ |
+| Vai tro | Mo ta |
 |---------|-------|
-| **USER** (á»¨ng viÃªn) | TÃ¬m viá»‡c, quáº£n lÃ½ CV, nháº­n gá»£i Ã½ viá»‡c lÃ m |
-| **RECRUITER** (NhÃ  tuyá»ƒn dá»¥ng) | ÄÄƒng tin, quáº£n lÃ½ á»©ng viÃªn, phÃ¢n quyá»n team |
-| **ADMIN** (Quáº£n trá»‹ viÃªn) | Quáº£n lÃ½ toÃ n há»‡ thá»‘ng, phÃ¢n quyá»n chi tiáº¿t |
+| **USER** (Ung vien) | Tim viec, quan ly CV, nhan goi y viec lam |
+| **RECRUITER** (Nha tuyen dung) | Dang tin, quan ly ung vien, phan quyen team |
+| **ADMIN** (Quan tri vien) | Quan ly toan he thong, phan quyen chi tiet |
 
 ---
 
-## âœ¨ TÃ­nh NÄƒng
+## Tinh Nang
 
-### ðŸ‘¤ DÃ nh cho á»¨ng viÃªn (USER)
-- ðŸ” TÃ¬m kiáº¿m vÃ  khÃ¡m phÃ¡ chi tiáº¿t thÃ´ng tin cÃ´ng ty, vá»‹ trÃ­ tuyá»ƒn dá»¥ng
-- ðŸ“ Quáº£n lÃ½ há»“ sÆ¡ cÃ¡ nhÃ¢n toÃ n diá»‡n: thÃ´ng tin, avatar, báº£o máº­t tÃ i khoáº£n
-- ðŸ“„ Táº¡o, chá»‰nh sá»­a, xÃ³a, táº£i lÃªn CV - ná»™p/rÃºt CV má»i lÃºc, má»i nÆ¡i
-- ðŸ“§ ÄÄƒng kÃ½ nháº­n email job alert cÃ¡ nhÃ¢n hÃ³a theo ngÃ nh/nghá», ká»¹ nÄƒng
-- ðŸ¤– **AI CV Analysis** - PhÃ¢n tÃ­ch CV báº±ng Gemini AI
+### Danh cho Ung vien (USER)
+- Tim kiem va kham pha chi tiet thong tin cong ty, vi tri tuyen dung
+- Quan ly ho so ca nhan toan dien: thong tin, avatar, bao mat tai khoan
+- Tao, chinh sua, xoa, tai len CV - nop/rut CV moi luc, moi noi
+- Dang ky nhan email job alert ca nhan hoa theo nganh/nghe, ky nang
+- **AI CV Analysis** - Phan tich CV bang Gemini AI
 
-### ðŸ¢ DÃ nh cho NhÃ  tuyá»ƒn dá»¥ng (RECRUITER)
-- ðŸ“¢ ÄÄƒng tin tuyá»ƒn dá»¥ng, quáº£n lÃ½ vá»‹ trÃ­, chá»‰nh sá»­a/ngá»«ng tuyá»ƒn
-- ðŸ›ï¸ Quáº£n trá»‹ thÃ´ng tin cÃ´ng ty: profile, hÃ¬nh áº£nh, giá»›i thiá»‡u
-- ðŸ‘ï¸ Quáº£n lÃ½ & lá»c á»©ng viÃªn: duyá»‡t CV, tá»« chá»‘i/ná»•i báº­t há»“ sÆ¡
-- ðŸ‘¥ Má»i Ä‘á»“ng nghiá»‡p, phÃ¢n quyá»n theo chá»©c nÄƒng tuyá»ƒn dá»¥ng
+### Danh cho Nha tuyen dung (RECRUITER)
+- Dang tin tuyen dung, quan ly vi tri, chinh sua/ngung tuyen
+- Quan tri thong tin cong ty: profile, hinh anh, gioi thieu
+- Quan ly & loc ung vien: duyet CV, tu choi/noi bat ho so
+- Moi dong nghiep, phan quyen theo chuc nang tuyen dung
 
-### âš™ï¸ DÃ nh cho Quáº£n trá»‹ viÃªn (ADMIN)
-- ðŸ” Quáº£n lÃ½ toÃ n bá»™ há»‡ thá»‘ng: duyá»‡t, chá»‰nh sá»­a, khÃ³a/xÃ³a tÃ i khoáº£n
-- ðŸ›¡ï¸ Táº¡o, chá»‰nh sá»­a vÃ  phÃ¢n quyá»n vai trÃ² chi tiáº¿t
+### Danh cho Quan tri vien (ADMIN)
+- Quan ly toan bo he thong: duyet, chinh sua, khoa/xoa tai khoan
+- Tao, chinh sua va phan quyen vai tro chi tiet
 
 ---
 
-## ðŸ› ï¸ CÃ´ng Nghá»‡
+## Cong Nghe
 
 ### Backend
-| CÃ´ng nghá»‡ | MÃ´ táº£ |
+| Cong nghe | Mo ta |
 |-----------|-------|
-| **Spring Boot 3** | Framework chÃ­nh, 60+ REST endpoints |
-| **Spring Security + OAuth2** | XÃ¡c thá»±c & phÃ¢n quyá»n JWT |
-| **MySQL** | CÆ¡ sá»Ÿ dá»¯ liá»‡u chÃ­nh |
+| **Spring Boot 3** | Framework chinh, 80+ REST endpoints |
+| **Spring Security + OAuth2** | Xac thuc & phan quyen JWT |
+| **MySQL** | Co so du lieu chinh |
 | **Redis** | Cache & session management |
-| **AWS S3** | LÆ°u trá»¯ file (CV, avatar, logo) |
+| **AWS S3** | Luu tru file (CV, avatar, logo) |
 | **Spring Mail + Thymeleaf** | Email templates |
 | **Gemini AI** | AI CV Analysis & Chat |
-| **VNPay** | Thanh toÃ¡n trá»±c tuyáº¿n |
+| **VNPay** | Thanh toan truc tuyen |
 | **Swagger/OpenAPI** | API Documentation |
 
 ### Frontend
-| CÃ´ng nghá»‡ | MÃ´ táº£ |
+| Cong nghe | Mo ta |
 |-----------|-------|
 | **React 18** | UI Library |
 | **TypeScript** | Type Safety |
@@ -82,9 +82,9 @@ TalentBridge khÃ´ng chá»‰ Ä‘Æ¡n thuáº§n lÃ  website tra cá»©u
 
 ---
 
-## ðŸš€ CÃ i Äáº·t
+## Cai Dat
 
-### YÃªu Cáº§u Há»‡ Thá»‘ng
+### Yeu Cau He Thong
 - **Java 17+**
 - **Node.js 18+**
 - **MySQL 8.0+**
@@ -94,8 +94,8 @@ TalentBridge khÃ´ng chá»‰ Ä‘Æ¡n thuáº§n lÃ  website tra cá»©u
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-username/TalentBridge.git
-cd TalentBridge
+git clone https://github.com/AnTRan211312/web_tuyendung.git
+cd web_tuyendung
 ```
 
 ### 2. Backend Setup
@@ -103,11 +103,11 @@ cd TalentBridge
 ```bash
 cd BackEnd-Works
 
-# Copy file cáº¥u hÃ¬nh máº«u
+# Copy file cau hinh mau
 cp src/main/resources/application.properties.example src/main/resources/application.properties
 
-# Chá»‰nh sá»­a application.properties vá»›i thÃ´ng tin cá»§a báº¡n
-# (xem pháº§n Cáº¥u HÃ¬nh bÃªn dÆ°á»›i)
+# Chinh sua application.properties voi thong tin cua ban
+# (xem phan Cau Hinh ben duoi)
 
 # Build & Run
 ./mvnw spring-boot:run
@@ -118,23 +118,23 @@ cp src/main/resources/application.properties.example src/main/resources/applicat
 ```bash
 cd TalentBridge-Frontend
 
-# Copy file cáº¥u hÃ¬nh máº«u
+# Copy file cau hinh mau
 cp .env.example .env.production
 
-# CÃ i Ä‘áº·t dependencies
+# Cai dat dependencies
 npm install
 
-# Cháº¡y development server
+# Chay development server
 npm run dev
 ```
 
 ---
 
-## âš™ï¸ Cáº¥u HÃ¬nh
+## Cau Hinh
 
 ### Backend Configuration
 
-Táº¡o file `application.properties` tá»« template `application.properties.example`:
+Tao file `application.properties` tu template `application.properties.example`:
 
 ```properties
 # Database
@@ -162,11 +162,11 @@ vnpay.hash-secret=YOUR_VNPAY_HASH_SECRET
 gemini.api-key=YOUR_GEMINI_API_KEY
 ```
 
-> âš ï¸ **Quan trá»ng:** File `application.properties` Ä‘Ã£ Ä‘Æ°á»£c thÃªm vÃ o `.gitignore`. KhÃ´ng bao giá» commit file nÃ y lÃªn GitHub!
+> **Quan trong:** File `application.properties` da duoc them vao `.gitignore`. Khong bao gio commit file nay len GitHub!
 
 ### Frontend Configuration
 
-Táº¡o file `.env.production` tá»« template `.env.example`:
+Tao file `.env.production` tu template `.env.example`:
 
 ```env
 VITE_API_URL=http://localhost:8080
@@ -210,19 +210,19 @@ VITE_API_URL=http://localhost:8080
 
 #### Block Public Access Settings
 
-Bá» chá»n:
-- âŒ Block public access to buckets and objects granted through new public bucket policies
-- âŒ Block public and cross-account access to buckets and objects through any public bucket policies
+Bo chon:
+- Block public access to buckets and objects granted through new public bucket policies
+- Block public and cross-account access to buckets and objects through any public bucket policies
 
-Giá»¯ check:
-- âœ… Block public access to buckets and objects granted through new ACLs
-- âœ… Block public and cross-account access to buckets and objects through any ACLs
+Giu check:
+- Block public access to buckets and objects granted through new ACLs
+- Block public and cross-account access to buckets and objects through any ACLs
 
 ---
 
-## ðŸ“– HÆ°á»›ng Dáº«n Sá»­ Dá»¥ng
+## Huong Dan Su Dung
 
-### Cháº¡y á»¨ng Dá»¥ng
+### Chay Ung Dung
 
 **Backend:**
 ```bash
@@ -236,44 +236,43 @@ cd TalentBridge-Frontend
 npm run dev
 ```
 
-### Truy Cáº­p
+### Truy Cap
 - **Frontend:** http://localhost:5173
 - **Backend API:** http://localhost:8080
 - **Swagger UI:** http://localhost:8080/swagger-ui/index.html
 
 ---
 
-## ðŸ“š API Documentation
+## API Documentation
 
-Swagger UI Ä‘Æ°á»£c tÃ­ch há»£p sáºµn. Sau khi cháº¡y Backend, truy cáº­p:
+Swagger UI duoc tich hop san. Sau khi chay Backend, truy cap:
 
-ðŸ”— **http://localhost:8080/swagger-ui/index.html**
+**http://localhost:8080/swagger-ui/index.html**
 
 ---
 
-## ðŸ“¸ Screenshots
+## Screenshots
 
-| Trang Chá»§ | TÃ¬m Viá»‡c |
+| Trang Chu | Tim Viec |
 |-----------|----------|
 | ![Homepage](img.png) | ![Job Search](img_1.png) |
 
-| Chi Tiáº¿t CÃ´ng Viá»‡c | Dashboard |
+| Chi Tiet Cong Viec | Dashboard |
 |--------------------|-----------|
 | ![Job Detail](img_2.png) | ![Dashboard](img_3.png) |
 
 ---
 
-## ðŸ“„ License
+## License
 
 This project is licensed under the MIT License.
 
 ---
 
-## ðŸ‘¨â€ðŸ’» TÃ¡c Giáº£
+## Tac Gia
 
 **TalentBridge Team**
 
 ---
 
-<p align="center">Made with â¤ï¸ by TalentBridge Team</p>#   w e b _ t u y e n d u n g  
- 
+<p align="center">Made with love by TalentBridge Team</p>
