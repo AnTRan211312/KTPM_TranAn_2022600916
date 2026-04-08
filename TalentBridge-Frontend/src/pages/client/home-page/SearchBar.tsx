@@ -26,19 +26,19 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="relative w-full bg-gradient-to-r from-orange-500 via-orange-600 to-yellow-500 px-4 py-16">
-      <div className="mx-auto mb-8 max-w-5xl text-center text-white">
-        <h1 className="mb-2 text-3xl font-bold sm:text-4xl">
+    <div className="relative w-full bg-gradient-to-r from-orange-500 via-orange-600 to-yellow-500 px-4 py-10">
+      <div className="mx-auto mb-4 max-w-5xl text-center text-white">
+        <h1 className="mb-1 text-2xl font-bold sm:text-3xl">
           Tìm kiếm việc làm phù hợp
         </h1>
-        <p className="text-sm sm:text-base">
+        <p className="text-xs sm:text-sm opacity-90">
           Khám phá hàng nghìn cơ hội việc làm chất lượng cao mỗi ngày
         </p>
       </div>
 
       <form
         onSubmit={handleSearch}
-        className="mx-auto flex max-w-4xl flex-col items-center gap-4 rounded-2xl bg-white/90 p-6 shadow-xl backdrop-blur-md sm:flex-row"
+        className="mx-auto flex max-w-4xl flex-col items-center gap-3 rounded-xl bg-white/90 p-4 shadow-xl backdrop-blur-md sm:flex-row"
       >
         {/* Job title input */}
         <div className="flex flex-1 items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-3">

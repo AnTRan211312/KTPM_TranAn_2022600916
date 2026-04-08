@@ -5,6 +5,7 @@ import com.TranAn.BackEnd_Works.model.constant.ResumeStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -62,4 +63,14 @@ public interface ResumeRepository extends
         Long countByStatusAndCompanyId(@Param("status") ResumeStatus status, @Param("companyId") Long companyId);
 
         Long countByJobId(Long jobId);
+
+        // ===== FIX N+1: Override findAll với EntityGraph =====
+
+        /** Override từ JpaSpecificationExecutor — load resume kèm user, job, company, logo, skills trong 1 query. */
+        @Override
+        @EntityGraph(attributePaths = {
+                "user",
+                "job", "job.company", "job.company.companyLogo", "job.skills"
+        })
+        Page<Resume> findAll(Specification<Resume> spec, Pageable pageable);
 }

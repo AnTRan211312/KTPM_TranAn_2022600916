@@ -2,6 +2,10 @@ package com.TranAn.BackEnd_Works.repository;
 
 import com.TranAn.BackEnd_Works.model.Company;
 import com.TranAn.BackEnd_Works.model.CompanyLogo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -34,4 +38,11 @@ public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpec
                         "GROUP BY c.id, c.name " +
                         "ORDER BY COUNT(r) DESC")
         List<Object[]> findTopCompaniesByResumeCount();
+
+        // ===== FIX N+1: Override findAll với EntityGraph =====
+
+        /** Override từ JpaSpecificationExecutor — load company kèm companyLogo và owner trong 1 query. */
+        @Override
+        @EntityGraph(attributePaths = {"companyLogo", "owner"})
+        Page<Company> findAll(Specification<Company> spec, Pageable pageable);
 }

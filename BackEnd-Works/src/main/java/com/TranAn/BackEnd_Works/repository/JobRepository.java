@@ -5,6 +5,7 @@ import com.TranAn.BackEnd_Works.model.constant.JobStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -74,4 +75,33 @@ public interface JobRepository extends
         int updateExpiredJobs(@Param("oldStatus") JobStatus oldStatus,
                         @Param("newStatus") JobStatus newStatus,
                         @Param("now") Instant now);
+
+        // ===== FIX N+1: EntityGraph & batch methods =====
+
+        /** Override findAll từ JpaSpecificationExecutor — load kèm company, logo, skills trong 1 query. */
+        @Override
+        @EntityGraph(attributePaths = {"company", "company.companyLogo", "skills"})
+        Page<Job> findAll(Specification<Job> spec, Pageable pageable);
+
+        /** Load danh sách jobs theo companyId kèm đầy đủ relations — tránh N+1. */
+        @EntityGraph(attributePaths = {"company", "company.companyLogo", "skills"})
+        @Query("SELECT j FROM Job j WHERE j.company.id = :id")
+        List<Job> findWithDetailsByCompanyId(@Param("id") Long id);
+
+        /** Đếm job count cho nhiều companyId cùng lúc (1 query thay vì N). */
+        @Query("SELECT j.company.id, COUNT(j) FROM Job j WHERE j.company.id IN :ids GROUP BY j.company.id")
+        List<Object[]> countByCompanyIdIn(@Param("ids") List<Long> ids);
+
+        /** Bulk SET company = null bằng 1 UPDATE — thay thế forEach(save()). */
+        @Modifying
+        @Query("UPDATE Job j SET j.company = null WHERE j.company.id = :companyId")
+        void detachAllJobsFromCompany(@Param("companyId") Long companyId);
+
+        /** Đếm jobs theo từng level trong 1 query GROUP BY — thay 5 countByLevel() riêng lẻ. */
+        @Query("SELECT j.level, COUNT(j) FROM Job j GROUP BY j.level")
+        List<Object[]> countGroupByLevel();
+
+        /** Đếm jobs theo từng level của 1 company trong 1 query GROUP BY. */
+        @Query("SELECT j.level, COUNT(j) FROM Job j WHERE j.company.id = :companyId GROUP BY j.level")
+        List<Object[]> countGroupByLevelAndCompanyId(@Param("companyId") Long companyId);
 }

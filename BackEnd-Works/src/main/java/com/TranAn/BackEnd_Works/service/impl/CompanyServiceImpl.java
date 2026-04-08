@@ -18,6 +18,8 @@ import com.TranAn.BackEnd_Works.service.JobService;
 import com.TranAn.BackEnd_Works.service.S3Service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,7 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -90,6 +94,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
+    @CacheEvict(value = "companies", key = "#id")
     public DefaultCompanyResponseDto updateCompany(
             DefaultCompanyRequestDto dto,
             Long id,
@@ -136,17 +141,32 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public Page<DefaultCompanyResponseDto> findAllCompanies(Specification<Company> spec, Pageable pageable) {
+        // dùng findAll — đã override với @EntityGraph để load logo sẵn, tránh N+1
         return companyRepository.findAll(spec, pageable)
                 .map(this::mapToResponseDto);
     }
 
     @Override
     public Page<DefaultCompanyExtendedResponseDto> findAllCompaniesWithJobsCount(Specification<Company> spec, Pageable pageable) {
-        return companyRepository.findAll(spec, pageable)
-                .map(this::mapToExtendedResponseDto);
+        // Bước 1: phân trang + load logo sẵn
+        Page<Company> page = companyRepository.findAll(spec, pageable);
+
+        // Bước 2: 1 query đếm jobs cho tất cả companies trong page — thay vì N query countByCompanyId
+        List<Long> ids = page.stream().map(Company::getId).toList();
+        Map<Long, Long> jobCountMap = ids.isEmpty()
+                ? Map.of()
+                : jobRepository.countByCompanyIdIn(ids).stream()
+                        .collect(Collectors.toMap(
+                                row -> (Long) row[0],
+                                row -> (Long) row[1]
+                        ));
+
+        // Bước 3: map sang DTO dùng jobCountMap (không query thêm)
+        return page.map(company -> mapToExtendedResponseDto(company, jobCountMap));
     }
 
     @Override
+    @Cacheable(value = "companies", key = "#id")
     public DefaultCompanyResponseDto findCompanyById(Long id) {
         return companyRepository.findById(id)
                 .map(this::mapToResponseDto)
@@ -267,6 +287,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
+    @CacheEvict(value = "companies", key = "#id")
     public DefaultCompanyResponseDto deleteCompanyById(Long id) {
         Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy công ty"));
@@ -288,14 +309,11 @@ public class CompanyServiceImpl implements CompanyService {
             companyLogoRepository.delete(company.getCompanyLogo());
         }
 
-        // 4. QUAN TRỌNG: Set company = null cho tất cả jobs TRƯỚC khi xóa
-        // Điều này tránh TransientObjectException khi JobService.saveAndFlush()
+        // 4. QUAN TRỌNG: Bulk detach tất cả jobs khỏi company bằng 1 UPDATE query
+        // thay vì forEach(save) gây N query
         if (company.getJobs() != null && !company.getJobs().isEmpty()) {
-            company.getJobs().forEach(job -> {
-                job.setCompany(null);
-                jobRepository.save(job); // Save để detach relationship
-            });
-            // Sau đó mới xóa jobs (sẽ cleanup resumes và skills)
+            jobRepository.detachAllJobsFromCompany(company.getId());
+            // Sau đó cleanup từng job (resumes + S3)
             company.getJobs().forEach(job -> jobService.deleteJobById(job.getId()));
         }
 
@@ -322,14 +340,13 @@ public class CompanyServiceImpl implements CompanyService {
         );
     }
 
-    private DefaultCompanyExtendedResponseDto mapToExtendedResponseDto(Company company) {
+    private DefaultCompanyExtendedResponseDto mapToExtendedResponseDto(Company company, Map<Long, Long> jobCountMap) {
         String logoUrl = null;
 
         if (company.getCompanyLogo() != null)
             logoUrl = company.getCompanyLogo().getLogoUrl();
 
-        Long jobsCount = jobRepository.countByCompanyId(company.getId());
-
+        Long jobsCount = jobCountMap.getOrDefault(company.getId(), 0L);
 
         return new DefaultCompanyExtendedResponseDto(
                 company.getId(),

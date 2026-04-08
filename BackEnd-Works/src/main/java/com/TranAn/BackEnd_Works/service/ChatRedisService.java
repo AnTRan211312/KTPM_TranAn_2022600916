@@ -8,17 +8,18 @@ import java.util.List;
 public interface ChatRedisService {
 
     /**
-     * Lưu lịch sử chat vào Redis
-     */
-    void saveChatHistory(String userId, String sessionId, List<ChatMessage> messages, Duration expire);
-
-    /**
-     * Lấy lịch sử chat từ Redis
+     * Lấy lịch sử chat từ Redis (đọc toàn bộ Redis List)
      */
     List<ChatMessage> getChatHistory(String userId, String sessionId);
 
     /**
-     * Thêm một message vào lịch sử
+     * Bulk load lịch sử từ DB vào Redis (dùng khi cache miss)
+     * Xóa key cũ trước khi ghi để tránh duplicate
+     */
+    void bulkLoadHistory(String userId, String sessionId, List<ChatMessage> messages, Duration expire);
+
+    /**
+     * Thêm một message vào cuối lịch sử (atomic RPUSH — không có race condition)
      */
     void addMessage(String userId, String sessionId, ChatMessage message, Duration expire);
 
@@ -33,7 +34,7 @@ public interface ChatRedisService {
     boolean existsChatHistory(String userId, String sessionId);
 
     /**
-     * Lấy danh sách tất cả sessionId của user
+     * Lấy danh sách tất cả sessionId của user (dùng SCAN thay vì KEYS)
      */
     List<String> getAllSessionIds(String userId);
 }

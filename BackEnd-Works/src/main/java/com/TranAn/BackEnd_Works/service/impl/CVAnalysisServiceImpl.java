@@ -27,6 +27,8 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
@@ -40,9 +42,9 @@ public class CVAnalysisServiceImpl implements CVAnalysisService {
     private final ObjectMapper objectMapper;
 
     private static final String ANALYSIS_PROMPT_TEMPLATE = """
-            Bạn là chuyên gia tuyển dụng IT. Hãy phân tích nội dung CV bên dưới và đánh giá độ phù hợp với vị trí công việc:
+            Bạn là cuyên gia tuyển dụng IT. Hãy phân tích nội dung CV bên dưới và đánh giá độ phù hợp với vị trí công việc:
 
-            **VỊ TRÍ TUYỂN DỤNG:**
+            **VỊ TRÍ TUYỂN DỤNG:**h
             - Tên công việc: %s
             - Cấp bậc: %s
             - Kỹ năng yêu cầu: %s
@@ -71,64 +73,87 @@ public class CVAnalysisServiceImpl implements CVAnalysisService {
             """;
 
     @Override
-    public CVAnalysisResponseDto analyzeResume(Long resumeId) {
-        log.info("Analyzing resume with ID: {}", resumeId);
+    public Flux<String> analyzeResume(Long resumeId) {
+        log.info("Streaming analysis for resume ID: {}", resumeId);
 
-        Resume resume = resumeRepository.findById(resumeId)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy resume với ID: " + resumeId));
+        return Flux.concat(
+                // Phase 1: Loading
+                Mono.just("{\"phase\":\"LOADING_PDF\",\"message\":\"Đang tải CV...\"}"),
 
-        Job job = resume.getJob();
-        if (job == null) {
-            throw new EntityNotFoundException("Resume không liên kết với công việc nào");
-        }
+                // Phase 2: Extract and analyze
+                Mono.fromCallable(() -> {
+                    Resume resume = resumeRepository.findById(resumeId)
+                            .orElseThrow(
+                                    () -> new EntityNotFoundException("Không tìm thấy resume với ID: " + resumeId));
 
-        // Generate presigned URL for CV PDF
-        String presignedUrl = s3Service.generatePresignedUrl(resume.getFileKey(), Duration.ofMinutes(15));
+                    Job job = resume.getJob();
+                    if (job == null) {
+                        throw new EntityNotFoundException("Resume không liên kết với công việc nào");
+                    }
 
-        // Extract text from PDF
-        String pdfText = extractTextFromPdfUrl(presignedUrl);
+                    String presignedUrl = s3Service.generatePresignedUrl(resume.getFileKey(), Duration.ofMinutes(15));
+                    String pdfText = extractTextFromPdfUrl(presignedUrl);
+                    return buildPrompt(job, pdfText);
+                }).flatMapMany(prompt -> Flux.concat(
+                        Mono.just("{\"phase\":\"ANALYZING\",\"message\":\"Đang phân tích CV...\"}"),
+                        chatClient.prompt().user(prompt).stream().content())),
 
-        // Build prompt and call AI
-        String prompt = buildPrompt(job, pdfText);
-        String aiResponse = callAI(prompt);
-
-        // Parse response
-        CVAnalysisResponseDto result = parseAIResponse(aiResponse);
-        result.setJobName(job.getName());
-        result.setResumeId(resumeId);
-
-        log.info("CV analysis completed for resume ID: {} with match score: {}%", resumeId, result.getMatchScore());
-        return result;
+                // Phase 3: Complete
+                Mono.just("{\"phase\":\"COMPLETE\",\"message\":\"Hoàn tất!\"}"))
+                .doOnError(e -> log.error("Streaming analysis error for resume {}: {}", resumeId, e.getMessage()));
     }
 
     @Override
-    public CVAnalysisResponseDto analyzeResumePreview(MultipartFile cvFile, Long jobId) {
-        log.info("Analyzing CV preview for job ID: {}", jobId);
+    public Flux<String> analyzeResumePreview(MultipartFile cvFile, Long jobId) {
+        log.info("Streaming CV preview analysis for job ID: {}", jobId);
 
         if (cvFile == null || cvFile.isEmpty()) {
-            throw new IllegalArgumentException("File CV không được rỗng");
+            return Flux.error(new IllegalArgumentException("File CV không được rỗng"));
         }
 
         if (!"application/pdf".equals(cvFile.getContentType())) {
-            throw new IllegalArgumentException("Chỉ hỗ trợ file PDF");
+            return Flux.error(new IllegalArgumentException("Chỉ hỗ trợ file PDF"));
         }
 
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy công việc với ID: " + jobId));
+        return Flux.concat(
+                Mono.just("{\"phase\":\"LOADING_PDF\",\"message\":\"Đang đọc CV...\"}"),
+                Mono.fromCallable(() -> {
+                    Job job = jobRepository.findById(jobId)
+                            .orElseThrow(
+                                    () -> new EntityNotFoundException("Không tìm thấy công việc với ID: " + jobId));
+                    String pdfText = extractTextFromMultipartFile(cvFile);
+                    return buildPrompt(job, pdfText);
+                }).flatMapMany(prompt -> Flux.concat(
+                        Mono.just("{\"phase\":\"ANALYZING\",\"message\":\"Đang phân tích CV...\"}"),
+                        chatClient.prompt().user(prompt).stream().content())),
+                Mono.just("{\"phase\":\"COMPLETE\",\"message\":\"Hoàn tất!\"}"))
+                .doOnError(e -> log.error("Streaming preview analysis error for job {}: {}", jobId, e.getMessage()));
+    }
 
-        // Extract text from uploaded PDF directly (no need to upload to S3)
-        String pdfText = extractTextFromMultipartFile(cvFile);
+    @Override
+    public Flux<String> analyzeExistingResumeForJob(Long resumeId, Long jobId) {
+        log.info("Streaming analysis for existing resume ID: {} against job ID: {}", resumeId, jobId);
 
-        // Build prompt and call AI
-        String prompt = buildPrompt(job, pdfText);
-        String aiResponse = callAI(prompt);
+        return Flux.concat(
+                Mono.just("{\"phase\":\"LOADING_PDF\",\"message\":\"Đang tải CV...\"}"),
+                Mono.fromCallable(() -> {
+                    Resume resume = resumeRepository.findById(resumeId)
+                            .orElseThrow(
+                                    () -> new EntityNotFoundException("Không tìm thấy CV với ID: " + resumeId));
 
-        // Parse response
-        CVAnalysisResponseDto result = parseAIResponse(aiResponse);
-        result.setJobName(job.getName());
+                    Job job = jobRepository.findById(jobId)
+                            .orElseThrow(
+                                    () -> new EntityNotFoundException("Không tìm thấy công việc với ID: " + jobId));
 
-        log.info("CV preview analysis completed for job ID: {} with match score: {}%", jobId, result.getMatchScore());
-        return result;
+                    String presignedUrl = s3Service.generatePresignedUrl(resume.getFileKey(), Duration.ofMinutes(15));
+                    String pdfText = extractTextFromPdfUrl(presignedUrl);
+                    return buildPrompt(job, pdfText);
+                }).flatMapMany(prompt -> Flux.concat(
+                        Mono.just("{\"phase\":\"ANALYZING\",\"message\":\"Đang phân tích CV...\"}"),
+                        chatClient.prompt().user(prompt).stream().content())),
+                Mono.just("{\"phase\":\"COMPLETE\",\"message\":\"Hoàn tất!\"}"))
+                .doOnError(e -> log.error("Streaming analysis error for existing resume {} against job {}: {}",
+                        resumeId, jobId, e.getMessage()));
     }
 
     /**

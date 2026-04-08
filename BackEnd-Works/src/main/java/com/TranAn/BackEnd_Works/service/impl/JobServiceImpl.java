@@ -9,7 +9,9 @@ import com.TranAn.BackEnd_Works.service.S3Service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,7 +35,9 @@ public class JobServiceImpl implements JobService {
 
         @Override
         public Page<JobResponseDto> findAllJobs(Specification<Job> spec, Pageable pageable) {
-                return jobRepository.findAll(spec, pageable)
+                // Thêm sort ưu tiên: job chưa hết hạn lên trước, hết hạn xuống cuối
+                Pageable sortedPageable = applyExpiredLastSort(pageable);
+                return jobRepository.findAll(spec, sortedPageable)
                                 .map(this::mapToResponseDto);
         }
 
@@ -52,8 +56,10 @@ public class JobServiceImpl implements JobService {
                 if (user.getCompany() == null)
                         throw new EntityNotFoundException("Không tìm thấy công ty người dùng");
 
+                // Thêm sort ưu tiên: job chưa hết hạn lên trước, hết hạn xuống cuối
+                Pageable sortedPageable = applyExpiredLastSort(pageable);
                 return jobRepository
-                                .findByCompanyId(user.getCompany().getId(), spec, pageable)
+                                .findByCompanyId(user.getCompany().getId(), spec, sortedPageable)
                                 .map(this::mapToResponseDto);
         }
 
@@ -240,7 +246,7 @@ public class JobServiceImpl implements JobService {
         @Override
         public List<JobResponseDto> findJobByCompanyId(Long id) {
                 return jobRepository
-                                .findByCompanyId(id)
+                                .findWithDetailsByCompanyId(id)
                                 .stream()
                                 .map(job -> {
                                         JobResponseDto dto = mapToResponseDto(job);
@@ -304,6 +310,25 @@ public class JobServiceImpl implements JobService {
                 return com.TranAn.BackEnd_Works.model.constant.JobStatus.ACTIVE.name();
         }
 
+        /**
+         * Tạo Pageable mới với sort ưu tiên:
+         * 1. Job chưa hết hạn (endDate >= now) lên trước
+         * 2. Job đã hết hạn (endDate < now) xuống cuối
+         * 3. Trong mỗi nhóm, sort theo createdAt giảm dần (mới nhất trước)
+         */
+        private Pageable applyExpiredLastSort(Pageable pageable) {
+                Sort expiredLastSort = Sort.by(
+                                Sort.Order.desc("endDate"),
+                                Sort.Order.desc("createdAt")
+                );
+
+                return PageRequest.of(
+                                pageable.getPageNumber(),
+                                pageable.getPageSize(),
+                                expiredLastSort
+                );
+        }
+
         private void cleanupJobResumesAndSkills(Job job) {
                 if (job.getSkills() != null)
                         job.getSkills().clear();
@@ -320,11 +345,16 @@ public class JobServiceImpl implements JobService {
         @Override
         public Map<String, Long> getJobStatsByLevel() {
                 Map<String, Long> stats = new LinkedHashMap<>();
-                stats.put("INTERN", jobRepository.countByLevel(com.TranAn.BackEnd_Works.model.constant.Level.INTERN));
-                stats.put("FRESHER", jobRepository.countByLevel(com.TranAn.BackEnd_Works.model.constant.Level.FRESHER));
-                stats.put("MIDDLE", jobRepository.countByLevel(com.TranAn.BackEnd_Works.model.constant.Level.MIDDLE));
-                stats.put("SENIOR", jobRepository.countByLevel(com.TranAn.BackEnd_Works.model.constant.Level.SENIOR));
-                stats.put("LEADER", jobRepository.countByLevel(com.TranAn.BackEnd_Works.model.constant.Level.LEADER));
+                // 1 query GROUP BY thay vì 5 query COUNT riêng lẻ
+                jobRepository.countGroupByLevel().forEach(row -> {
+                        String level = row[0].toString();
+                        Long count = (Long) row[1];
+                        stats.put(level, count);
+                });
+                // Đảm bảo đủ 5 level kể cả khi count = 0
+                for (String level : List.of("INTERN", "FRESHER", "MIDDLE", "SENIOR", "LEADER")) {
+                        stats.putIfAbsent(level, 0L);
+                }
                 return stats;
         }
 
@@ -340,25 +370,16 @@ public class JobServiceImpl implements JobService {
 
                 Long companyId = user.getCompany().getId();
                 Map<String, Long> stats = new LinkedHashMap<>();
-                stats.put("INTERN",
-                                jobRepository.countByLevelAndCompanyId(
-                                                com.TranAn.BackEnd_Works.model.constant.Level.INTERN,
-                                                companyId));
-                stats.put("FRESHER", jobRepository
-                                .countByLevelAndCompanyId(com.TranAn.BackEnd_Works.model.constant.Level.FRESHER,
-                                                companyId));
-                stats.put("MIDDLE",
-                                jobRepository.countByLevelAndCompanyId(
-                                                com.TranAn.BackEnd_Works.model.constant.Level.MIDDLE,
-                                                companyId));
-                stats.put("SENIOR",
-                                jobRepository.countByLevelAndCompanyId(
-                                                com.TranAn.BackEnd_Works.model.constant.Level.SENIOR,
-                                                companyId));
-                stats.put("LEADER",
-                                jobRepository.countByLevelAndCompanyId(
-                                                com.TranAn.BackEnd_Works.model.constant.Level.LEADER,
-                                                companyId));
+                // 1 query GROUP BY thay vì 5 query COUNT riêng lẻ
+                jobRepository.countGroupByLevelAndCompanyId(companyId).forEach(row -> {
+                        String level = row[0].toString();
+                        Long count = (Long) row[1];
+                        stats.put(level, count);
+                });
+                // Đảm bảo đủ 5 level kể cả khi count = 0
+                for (String level : List.of("INTERN", "FRESHER", "MIDDLE", "SENIOR", "LEADER")) {
+                        stats.putIfAbsent(level, 0L);
+                }
                 return stats;
         }
 }

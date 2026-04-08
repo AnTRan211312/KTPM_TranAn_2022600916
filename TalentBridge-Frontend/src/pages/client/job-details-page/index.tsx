@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/breadcrumb.tsx";
 import JobSection from "./JobSection.tsx";
 import { ApplySection } from "./ApplySection.tsx";
+import InterviewQuestionsSection from "./InterviewQuestionsSection.tsx";
 import { ViewApplicantCountButton } from "@/components/custom/ViewApplicantCountButton";
 
 import {
@@ -180,6 +181,9 @@ const JobDetailsClientPage = ({ initialJob }: JobDetailsProp) => {
           </div>
         </div>
       </div>
+      
+      {/* Floating AI Interview Questions Button + Dialog */}
+      <InterviewQuestionsSection jobId={job.id} jobName={job.name} />
     </div>
   );
 };

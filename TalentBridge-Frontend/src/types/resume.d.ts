@@ -51,3 +51,11 @@ export interface CompanyForResume {
   name: string;
   logoUrl: string;
 }
+
+export interface UserResumeFileDto {
+  resumeId: number;
+  pdfUrl: string;
+  jobName: string;
+  companyName: string;
+  createdAt: string;
+}

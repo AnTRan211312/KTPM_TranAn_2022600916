@@ -182,71 +182,80 @@ const JobManagerRecruiterPage = () => {
         }}
       />
 
-      {/* Thống kê trình độ */}
-      <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-        <div className="mb-5 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-800">Thống kê theo trình độ</h3>
-          <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-medium text-purple-600">
-            Tổng: {levelStats.INTERN + levelStats.FRESHER + levelStats.MIDDLE + levelStats.SENIOR + levelStats.LEADER} vị trí
-          </span>
+      {/* Thống kê trình độ - Compact Design */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+        {/* Intern */}
+        <div className="group relative overflow-hidden rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100 transition-all duration-300 hover:shadow-md hover:ring-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 transition-transform duration-300 group-hover:scale-110">
+              <svg className="h-6 w-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Intern</p>
+              <p className="text-2xl font-bold text-slate-800">{levelStats.INTERN}</p>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-5 divide-x divide-gray-100">
-          {/* Intern */}
-          <div className="group cursor-pointer px-4 py-3 text-center transition-all hover:bg-gray-50">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 text-gray-600 transition-all group-hover:bg-gray-200 group-hover:scale-105">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+        {/* Fresher */}
+        <div className="group relative overflow-hidden rounded-xl bg-white p-4 shadow-sm ring-1 ring-emerald-100 transition-all duration-300 hover:shadow-md hover:ring-emerald-200">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-200 transition-transform duration-300 group-hover:scale-110">
+              <svg className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
               </svg>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{levelStats.INTERN}</p>
-            <p className="mt-1 text-sm font-medium text-gray-500">Intern</p>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-emerald-600">Fresher</p>
+              <p className="text-2xl font-bold text-emerald-700">{levelStats.FRESHER}</p>
+            </div>
           </div>
+        </div>
 
-          {/* Fresher */}
-          <div className="group cursor-pointer px-4 py-3 text-center transition-all hover:bg-emerald-50">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 transition-all group-hover:bg-emerald-200 group-hover:scale-105">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        {/* Middle */}
+        <div className="group relative overflow-hidden rounded-xl bg-white p-4 shadow-sm ring-1 ring-blue-100 transition-all duration-300 hover:shadow-md hover:ring-blue-200">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 transition-transform duration-300 group-hover:scale-110">
+              <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z" />
               </svg>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{levelStats.FRESHER}</p>
-            <p className="mt-1 text-sm font-medium text-emerald-600">Fresher</p>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-blue-600">Middle</p>
+              <p className="text-2xl font-bold text-blue-700">{levelStats.MIDDLE}</p>
+            </div>
           </div>
+        </div>
 
-          {/* Middle */}
-          <div className="group cursor-pointer px-4 py-3 text-center transition-all hover:bg-blue-50">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600 transition-all group-hover:bg-blue-200 group-hover:scale-105">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        {/* Senior */}
+        <div className="group relative overflow-hidden rounded-xl bg-white p-4 shadow-sm ring-1 ring-amber-100 transition-all duration-300 hover:shadow-md hover:ring-amber-200">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-100 to-amber-200 transition-transform duration-300 group-hover:scale-110">
+              <svg className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
               </svg>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{levelStats.MIDDLE}</p>
-            <p className="mt-1 text-sm font-medium text-blue-600">Middle</p>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-amber-600">Senior</p>
+              <p className="text-2xl font-bold text-amber-700">{levelStats.SENIOR}</p>
+            </div>
           </div>
+        </div>
 
-          {/* Senior */}
-          <div className="group cursor-pointer px-4 py-3 text-center transition-all hover:bg-amber-50">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-600 transition-all group-hover:bg-amber-200 group-hover:scale-105">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+        {/* Leader */}
+        <div className="group relative overflow-hidden rounded-xl bg-white p-4 shadow-sm ring-1 ring-purple-100 transition-all duration-300 hover:shadow-md hover:ring-purple-200">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-100 to-purple-200 transition-transform duration-300 group-hover:scale-110">
+              <svg className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
               </svg>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{levelStats.SENIOR}</p>
-            <p className="mt-1 text-sm font-medium text-amber-600">Senior</p>
-          </div>
-
-          {/* Leader */}
-          <div className="group cursor-pointer px-4 py-3 text-center transition-all hover:bg-purple-50">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 text-purple-600 transition-all group-hover:bg-purple-200 group-hover:scale-105">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-              </svg>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-purple-600">Leader</p>
+              <p className="text-2xl font-bold text-purple-700">{levelStats.LEADER}</p>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{levelStats.LEADER}</p>
-            <p className="mt-1 text-sm font-medium text-purple-600">Leader</p>
           </div>
         </div>
       </div>

@@ -1,24 +1,32 @@
-// src/components/layout/Header.tsx
-
-import { Home, Code, Building2, Menu } from "lucide-react";
+import { Home, Code, Building2, Menu, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAppSelector } from "@/features/hooks";
 import UserMenu from "@/pages/commons/UserMenu.tsx";
+import { toast } from "sonner";
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
   const { isLogin } = useAppSelector((state) => state.auth);
 
   const navItems = [
     { href: "/home", label: "Trang chủ", Icon: Home },
     { href: "/companies", label: "Công ty", Icon: Building2 },
     { href: "/jobs", label: "Việc làm IT", Icon: Code },
+    { href: "/user/cv-builder", label: "Tạo CV", Icon: FileText, requireLogin: true },
   ];
 
-  const handleNavClick = () => setIsOpen(false);
+  const handleNavClick = (e: React.MouseEvent, item: typeof navItems[0]) => {
+    if (item.requireLogin && !isLogin) {
+      e.preventDefault();
+      toast.error("Vui lòng đăng nhập để sử dụng tính năng này!");
+      return;
+    }
+    setIsOpen(false);
+  };
 
   return (
     <header className="relative w-full bg-gradient-to-r from-orange-500 via-orange-600 to-yellow-500 shadow">
@@ -38,24 +46,26 @@ const Header: React.FC = () => {
         {/* Desktop Nav */}
         <nav className="hidden lg:block">
           <ul className="flex items-center space-x-2">
-            {navItems.map(({ href, label, Icon }) => (
-              <li key={label}>
-                <NavLink
-                  to={href}
-                  onClick={handleNavClick}
-                  className={({ isActive }) =>
-                    `flex items-center gap-2 rounded-xl px-4 py-2 font-medium duration-300 ease-in-out hover:-translate-y-0.5 ${
-                      isActive
+            {navItems.map((item) => {
+              const { href, label, Icon } = item;
+              return (
+                <li key={label}>
+                  <NavLink
+                    to={href}
+                    onClick={(e) => handleNavClick(e, item)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2 rounded-xl px-4 py-2 font-medium duration-300 ease-in-out hover:-translate-y-0.5 ${isActive
                         ? "bg-amber-400 text-white"
                         : "bg-white text-orange-500"
-                    }`
-                  }
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{label}</span>
-                </NavLink>
-              </li>
-            ))}
+                      }`
+                    }
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{label}</span>
+                  </NavLink>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
@@ -89,17 +99,20 @@ const Header: React.FC = () => {
               className="w-[300px] bg-white sm:w-[400px]"
             >
               <div className="mt-8 flex flex-col space-y-3">
-                {navItems.map(({ href, label, Icon }) => (
-                  <Link
-                    key={label}
-                    to={href}
-                    onClick={handleNavClick}
-                    className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3 text-gray-700 hover:bg-orange-50"
-                  >
-                    <Icon className="h-5 w-5 text-orange-600" />
-                    <span>{label}</span>
-                  </Link>
-                ))}
+                {navItems.map((item) => {
+                  const { href, label, Icon } = item;
+                  return (
+                    <Link
+                      key={label}
+                      to={href}
+                      onClick={(e) => handleNavClick(e, item)}
+                      className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3 text-gray-700 hover:bg-orange-50"
+                    >
+                      <Icon className="h-5 w-5 text-orange-600" />
+                      <span>{label}</span>
+                    </Link>
+                  );
+                })}
               </div>
             </SheetContent>
           </Sheet>

@@ -100,8 +100,9 @@ public class AuthController {
     @GetMapping("/sessions")
     @ApiMessage(value = "Lấy session")
     @Operation(summary = "Lấy tất cả phiên đăng nhập của người dùng hiện tại")
-    public ResponseEntity<List<SessionMetaResponse>> getAllSelfSessionMetas() {
-        return ResponseEntity.ok(authService.getAllSelfSessionMetas());
+    public ResponseEntity<List<SessionMetaResponse>> getAllSelfSessionMetas(
+            @CookieValue(value = "refresh_token", required = false) String refreshToken) {
+        return ResponseEntity.ok(authService.getAllSelfSessionMetas(refreshToken));
     }
 
     @DeleteMapping("/sessions/{sessionId}")

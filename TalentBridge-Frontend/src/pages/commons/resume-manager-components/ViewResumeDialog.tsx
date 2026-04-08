@@ -26,7 +26,7 @@ import PDFViewer from "@/components/custom/PDFViewer.tsx";
 import RichTextPreview from "@/components/custom/RichText/index-preview.tsx";
 import { statusOptions } from "@/utils/tagColorMapper.ts";
 import { toast } from "sonner";
-import { analyzeResume, type CVAnalysisResponse } from "@/services/resumeApi.ts";
+import { analyzeResumeStream, type CVAnalysisResponse } from "@/services/resumeApi.ts";
 import { getErrorMessage } from "@/features/slices/auth/authThunk.ts";
 
 interface ViewResumeDialogProps {
@@ -92,6 +92,8 @@ export function ViewResumeDialog({
     }
   };
 
+  const [analysisStatus, setAnalysisStatus] = useState<string>("");
+
   const handleAnalyzeCV = async () => {
     if (!resume.id) {
       toast.error("Resume ID không hợp lệ");
@@ -99,16 +101,59 @@ export function ViewResumeDialog({
     }
 
     setIsAnalyzing(true);
+    setAnalysisResult(null);
+    setAnalysisStatus("Khởi tạo...");
+
     try {
-      const res = await analyzeResume(resume.id);
-      setAnalysisResult(res.data.data);
-      toast.success("Phân tích CV hoàn tất!");
+      let accumulatedAIResponse = "";
+
+      analyzeResumeStream(
+        resume.id,
+        (chunk) => {
+          try {
+            // Check if it's a phase marker
+            if (chunk.startsWith("{") && chunk.includes('"phase"')) {
+              const data = JSON.parse(chunk);
+              setAnalysisStatus(data.message || "Đang xử lý...");
+              return;
+            }
+            // Otherwise it's AI content
+            accumulatedAIResponse += chunk;
+          } catch (e) {
+            // If not JSON or error parsing, treat as AI content
+            accumulatedAIResponse += chunk;
+          }
+        },
+        () => {
+          // onComplete
+          setIsAnalyzing(false);
+          setAnalysisStatus("");
+          try {
+            // Extract JSON from response (AI might include markdown code blocks)
+            const jsonMatch = accumulatedAIResponse.match(/\{[\s\S]*\}/);
+            const jsonStr = jsonMatch ? jsonMatch[0] : accumulatedAIResponse;
+            const parsed = JSON.parse(jsonStr);
+            setAnalysisResult(parsed);
+            toast.success("Phân tích CV hoàn tất!");
+          } catch (e) {
+            console.error("Failed to parse AI response:", accumulatedAIResponse);
+            toast.error("Lỗi phân tích kết quả AI. Vui lòng thử lại.");
+          }
+        },
+        (error) => {
+          // onError
+          setIsAnalyzing(false);
+          setAnalysisStatus("");
+          console.error("Streaming error:", error);
+          toast.error("Lỗi kết nối khi phân tích CV");
+        }
+      );
     } catch (error) {
-      toast.error(getErrorMessage(error, "Không thể phân tích CV"));
-    } finally {
+      toast.error(getErrorMessage(error, "Không thể bắt đầu phân tích CV"));
       setIsAnalyzing(false);
     }
   };
+
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-600";
@@ -156,7 +201,7 @@ export function ViewResumeDialog({
             {isAnalyzing ? (
               <>
                 <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                Đang phân tích...
+                {analysisStatus}
               </>
             ) : (
               <>

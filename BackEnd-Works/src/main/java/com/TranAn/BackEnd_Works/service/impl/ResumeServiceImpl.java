@@ -7,6 +7,7 @@ import com.TranAn.BackEnd_Works.dto.response.resume.CreateResumeResponseDto;
 import com.TranAn.BackEnd_Works.dto.response.resume.DefaultResumeResponseDto;
 import com.TranAn.BackEnd_Works.dto.response.resume.GetResumeFileResponseDto;
 import com.TranAn.BackEnd_Works.dto.response.resume.ResumeForDisplayResponseDto;
+import com.TranAn.BackEnd_Works.dto.response.resume.UserResumeFileDto;
 import com.TranAn.BackEnd_Works.model.*;
 import com.TranAn.BackEnd_Works.repository.JobRepository;
 import com.TranAn.BackEnd_Works.repository.ResumeRepository;
@@ -48,7 +49,8 @@ public class ResumeServiceImpl implements ResumeService {
         @Override
         public CreateResumeResponseDto saveResume(
                         ResumeRequestDto resumeRequestDto,
-                        MultipartFile pdfFile) {
+                        MultipartFile pdfFile,
+                        Long existingResumeId) {
                 Resume resume = new Resume(
                                 resumeRequestDto.getEmail(),
                                 resumeRequestDto.getStatus(),
@@ -85,6 +87,7 @@ public class ResumeServiceImpl implements ResumeService {
                 Resume savedResume = resumeRepository.saveAndFlush(resume);
 
                 if (pdfFile != null && !pdfFile.isEmpty()) {
+                        // Upload file mới
                         String safeEmail = savedResume.getEmail().replaceAll("[^a-zA-Z0-9]", "_");
                         String folderName = "resume/" + safeEmail;
                         String generatedFileName = "resume-" + savedResume.getId() + "-" + resume.getVersion() + ".pdf";
@@ -92,8 +95,25 @@ public class ResumeServiceImpl implements ResumeService {
                         String key = s3Service.uploadFile(pdfFile, folderName, generatedFileName, false);
 
                         savedResume.setFileKey(key);
-                } else
-                        throw new EntityNotFoundException("Không tìm thấy tệp pdf");
+                } else if (existingResumeId != null) {
+                        // Tái sử dụng file CV từ resume đã nộp trước đó
+                        Resume existingResume = resumeRepository
+                                        .findById(existingResumeId)
+                                        .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy CV đã nộp trước đó"));
+
+                        // Kiểm tra resume này thuộc về user hiện tại
+                        if (!existingResume.getUser().getId().equals(user.getId())) {
+                                throw new AccessDeniedException("Không có quyền sử dụng CV này");
+                        }
+
+                        if (existingResume.getFileKey() == null || existingResume.getFileKey().isEmpty()) {
+                                throw new EntityNotFoundException("CV đã chọn không có file đính kèm");
+                        }
+
+                        savedResume.setFileKey(existingResume.getFileKey());
+                } else {
+                        throw new EntityNotFoundException("Vui lòng tải lên file CV hoặc chọn CV đã nộp trước đó");
+                }
 
                 // Gửi thông báo in-app cho các recruiter của công ty
                 try {
@@ -462,6 +482,38 @@ public class ResumeServiceImpl implements ResumeService {
                 User user = userRepository.findByEmail(email)
                                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng"));
                 return resumeRepository.existsByUserIdAndJobId(user.getId(), jobId);
+        }
+
+        @Override
+        public List<UserResumeFileDto> getUserResumeFiles() {
+                String email = SecurityContextHolder.getContext().getAuthentication().getName();
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng"));
+
+                // Sắp xếp theo ngày tạo giảm dần để lấy các bản ghi mới nhất trước
+                org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt");
+                Specification<Resume> userSpec = (root, q, cb) -> cb.equal(root.get("user").get("id"), user.getId());
+                List<Resume> allResumes = resumeRepository.findAll(userSpec, sort);
+
+                // Gom nhóm theo fileKey để chỉ lấy các file CV duy nhất
+                java.util.Map<String, Resume> uniqueResumes = new java.util.LinkedHashMap<>();
+                for (Resume r : allResumes) {
+                        if (r.getFileKey() != null && !r.getFileKey().isEmpty()) {
+                                // Vì danh sách đã được sắp xếp giảm dần, cái đầu tiên gặp cho mỗi fileKey sẽ là cái mới nhất
+                                uniqueResumes.putIfAbsent(r.getFileKey(), r);
+                        }
+                }
+
+                return uniqueResumes.values().stream()
+                                .map(r -> new UserResumeFileDto(
+                                                r.getId(),
+                                                s3Service.generatePresignedUrl(r.getFileKey(), Duration.ofMinutes(15)),
+                                                r.getJob() != null ? r.getJob().getName() : "N/A",
+                                                r.getJob() != null && r.getJob().getCompany() != null
+                                                                ? r.getJob().getCompany().getName()
+                                                                : "N/A",
+                                                r.getCreatedAt() != null ? r.getCreatedAt().toString() : ""))
+                                .toList();
         }
 
 }

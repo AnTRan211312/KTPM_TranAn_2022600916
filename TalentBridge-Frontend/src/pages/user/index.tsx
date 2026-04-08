@@ -1,4 +1,4 @@
-import { User, BarChart3, Settings, Mail, Bot, Shield } from "lucide-react";
+import { User, BarChart3, Settings, Mail, Bot, Shield, FileText } from "lucide-react";
 import { useAppSelector } from "@/features/hooks";
 import { Navigate, NavLink, Outlet, Link } from "react-router-dom";
 
@@ -6,6 +6,7 @@ const navigationItems = [
   { title: "Thông tin", icon: User, href: "info" },
   { title: "Đăng ký thông báo", icon: Mail, href: "subscriber" },
   { title: "Hồ sơ tuyển dụng", icon: BarChart3, href: "resumes" },
+  { title: "Tạo CV", icon: FileText, href: "cv-builder", permission: "POST /chat-message" },
   { title: "Chat AI", icon: Bot, href: "chat", permission: "POST /chat-message" },
   { title: "Bảo mật", icon: Settings, href: "sessions" },
   { title: "Quản trị", icon: Shield, href: "/admin/dashboard", permission: "GET /admin/dashboard/stats", external: true },
@@ -73,10 +74,9 @@ export default function UserPage() {
                       <NavLink
                         to={item.href}
                         className={({ isActive }) =>
-                          `flex items-center rounded-lg px-4 py-2.5 text-sm font-medium transition-colors duration-200 ${
-                            isActive
-                              ? "bg-orange-100 text-orange-700"
-                              : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                          `flex items-center rounded-lg px-4 py-2.5 text-sm font-medium transition-colors duration-200 ${isActive
+                            ? "bg-orange-100 text-orange-700"
+                            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                           } `
                         }
                       >

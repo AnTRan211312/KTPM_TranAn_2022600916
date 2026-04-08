@@ -16,6 +16,9 @@ import UserResumePage from "@/pages/user/user-resume-page";
 import UserSessionPage from "@/pages/user/user-session-page";
 import UserChatPage from "@/pages/user/user-chat-page";
 import PaymentResultPage from "@/pages/payment/PaymentResultPage";
+import CVBuilderPage from "@/pages/user/cv-builder-page";
+import TemplateSelectionPage from "@/pages/user/cv-builder-page/TemplateSelectionPage";
+import CVEditorPage from "@/pages/user/cv-builder-page/CVEditorPage";
 
 // ADMIN PAGE
 import AdminPage from "@/pages/admin";
@@ -103,6 +106,10 @@ const router = createBrowserRouter([
             ),
           },
           { path: "sessions", element: <UserSessionPage /> },
+          // CV Builder routes
+          { path: "cv-builder", element: <CVBuilderPage /> },
+          { path: "cv-builder/new", element: <TemplateSelectionPage /> },
+          { path: "cv-builder/edit/:id", element: <CVEditorPage /> },
         ],
       },
     ],

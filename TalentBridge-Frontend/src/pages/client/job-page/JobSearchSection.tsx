@@ -85,51 +85,36 @@ export function JobSearchSection({
           </Select>
         </div>
 
-        <div className="min-w-[150px] flex-1 space-y-2">
+        <div className="min-w-[150px] space-y-2">
           <Label
             htmlFor="search-location"
             className="font-medium text-gray-700"
           >
             Địa điểm:
           </Label>
-          <div className="flex gap-2">
-            <Input
-              id="search-location"
-              placeholder="Nhập địa điểm..."
-              value={searchLocation}
-              onChange={(e) => onChange.location(e.target.value)}
-              className="flex-1 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-            />
-            <div className="flex gap-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onChange.location("Hồ Chí Minh")}
-                className="border-gray-300 text-xs text-gray-600 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-600"
-              >
-                HCM
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onChange.location("Hà Nội")}
-                className="border-gray-300 text-xs text-gray-600 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-600"
-              >
-                HN
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onChange.location("Đà Nẵng")}
-                className="border-gray-300 text-xs text-gray-600 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-600"
-              >
-                ĐN
-              </Button>
-            </div>
-          </div>
+          <Select value={searchLocation} onValueChange={onChange.location}>
+            <SelectTrigger className="border-gray-300 focus:border-orange-500 focus:ring-orange-500">
+              <SelectValue placeholder="Chọn địa điểm..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value="Hà Nội">Hà Nội</SelectItem>
+              <SelectItem value="Hồ Chí Minh">Hồ Chí Minh</SelectItem>
+              <SelectItem value="Đà Nẵng">Đà Nẵng</SelectItem>
+              <SelectItem value="Hải Phòng">Hải Phòng</SelectItem>
+              <SelectItem value="Cần Thơ">Cần Thơ</SelectItem>
+              <SelectItem value="Bình Dương">Bình Dương</SelectItem>
+              <SelectItem value="Đồng Nai">Đồng Nai</SelectItem>
+              <SelectItem value="Bắc Ninh">Bắc Ninh</SelectItem>
+              <SelectItem value="Nghệ An">Nghệ An</SelectItem>
+              <SelectItem value="Thừa Thiên Huế">Thừa Thiên Huế</SelectItem>
+              <SelectItem value="Khánh Hòa">Khánh Hòa</SelectItem>
+              <SelectItem value="Bà Rịa - Vũng Tàu">Bà Rịa - Vũng Tàu</SelectItem>
+              <SelectItem value="Long An">Long An</SelectItem>
+              <SelectItem value="Quảng Ninh">Quảng Ninh</SelectItem>
+              <SelectItem value="Thanh Hóa">Thanh Hóa</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Nút Tải lại cùng dòng */}

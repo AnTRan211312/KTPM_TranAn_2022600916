@@ -13,10 +13,10 @@ import java.util.*;
 @Getter
 public class VnPayConfig {
 
-    @Value("${vnpay.tmn-code:857UW4LW}")
+    @Value("${vnpay.tmn-code:TAEDA399}")
     private String vnpTmnCode;
 
-    @Value("${vnpay.hash-secret:2BR6SR796J3WH0WK7BOLSTWB25F9B5PI}")
+    @Value("${vnpay.hash-secret:C7CHLHGYMQGASDJGIYD9A2O9PKIOZ5UP}")
     private String vnpHashSecret;
 
     @Value("${vnpay.pay-url:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}")

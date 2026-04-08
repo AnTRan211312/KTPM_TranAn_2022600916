@@ -9,12 +9,13 @@ import com.TranAn.BackEnd_Works.repository.SkillRepository;
 import com.TranAn.BackEnd_Works.service.SkillService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 @Service
 @Transactional
@@ -22,10 +23,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class SkillServiceImpl implements SkillService {
 
     private final SkillRepository skillRepository;
+
     @Override
+    @CacheEvict(value = "skills", allEntries = true)
     public DefaultSkillResponseDto saveSkill(CreateSkillRequestDto createSkillRequestDto) {
 
-        if(skillRepository.existsByName(createSkillRequestDto.getName())) {
+        if (skillRepository.existsByName(createSkillRequestDto.getName())) {
             throw new ResourceAlreadyExistsException("kỹ năng đã tồn tại");
         }
 
@@ -39,11 +42,12 @@ public class SkillServiceImpl implements SkillService {
     public Page<DefaultSkillResponseDto> findAllSkills(Specification<Skill> spec, Pageable pageable) {
 
         return skillRepository
-                .findAll(spec,pageable)
+                .findAll(spec, pageable)
                 .map(this::mapToDefaultSkillResponseDto);
     }
 
     @Override
+    @Cacheable(value = "skills", key = "#id")
     public DefaultSkillResponseDto findSkillById(Long id) {
         return skillRepository
                 .findById(id)
@@ -52,6 +56,7 @@ public class SkillServiceImpl implements SkillService {
     }
 
     @Override
+    @CacheEvict(value = "skills", allEntries = true)
     public DefaultSkillResponseDto updateSkillById(UpdateSkillResponseDto updateSkillResponseDto) {
 
         Skill skill = skillRepository
@@ -68,24 +73,22 @@ public class SkillServiceImpl implements SkillService {
     }
 
     @Override
+    @CacheEvict(value = "skills", allEntries = true)
     public DefaultSkillResponseDto deleteSkillById(Long id) {
         Skill skill = skillRepository
                 .findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy kỹ năng"));
-
 
         skillRepository.delete(skill);
 
         return mapToDefaultSkillResponseDto(skill);
     }
 
-
     private DefaultSkillResponseDto mapToDefaultSkillResponseDto(Skill skill) {
         return new DefaultSkillResponseDto(
                 skill.getId(),
                 skill.getName(),
                 skill.getCreatedAt().toString(),
-                skill.getUpdatedAt().toString()
-        );
+                skill.getUpdatedAt().toString());
     }
 }

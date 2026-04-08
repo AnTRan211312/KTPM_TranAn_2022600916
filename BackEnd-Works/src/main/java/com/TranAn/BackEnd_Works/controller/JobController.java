@@ -5,20 +5,26 @@ import com.TranAn.BackEnd_Works.dto.request.job.JobRequestDto;
 import com.TranAn.BackEnd_Works.dto.response.PageResponseDto;
 import com.TranAn.BackEnd_Works.dto.response.job.JobResponseDto;
 import com.TranAn.BackEnd_Works.model.Job;
+import com.TranAn.BackEnd_Works.service.InterviewQuestionService;
 import com.TranAn.BackEnd_Works.service.JobService;
 import com.turkraft.springfilter.boot.Filter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 @Tag(name = "Job")
 @RestController
@@ -27,11 +33,13 @@ import org.springframework.web.bind.annotation.*;
 public class JobController {
 
         private final JobService jobService;
+        private final InterviewQuestionService interviewQuestionService;
 
         @PostMapping
         @ApiMessage(value = "Tạo Job")
         @PreAuthorize("hasAuthority('POST /jobs')")
         @Operation(summary = "Tạo Job", description = "Yêu cầu quyền: <b>POST /jobs</b>")
+        @CacheEvict(value = "jobList", allEntries = true)
         public ResponseEntity<?> saveJob(@Valid @RequestBody JobRequestDto jobRequestDto) {
                 return ResponseEntity.ok(jobService.saveJob(jobRequestDto, false));
         }
@@ -40,6 +48,7 @@ public class JobController {
         @ApiMessage(value = "Tạo Job thuộc company của người dùng hiện tại")
         @PreAuthorize("hasAuthority('POST /jobs/company')")
         @Operation(summary = "Tạo Job thuộc company của người dùng hiện tại", description = "Yêu cầu quyền: <b>POST /jobs/company</b>")
+        @CacheEvict(value = "jobList", allEntries = true)
         public ResponseEntity<?> saveJobForRecruiterPage(@Valid @RequestBody JobRequestDto jobRequestDto) {
                 return ResponseEntity.ok(jobService.saveJob(jobRequestDto, true));
         }
@@ -49,19 +58,19 @@ public class JobController {
         @PreAuthorize("hasAuthority('GET /jobs') OR isAnonymous()")
         @Operation(summary = "Lấy danh sách Job", description = "Yêu cầu quyền: <b>GET /jobs</b>")
         @SecurityRequirements()
-        public ResponseEntity<?> findAllJobs(
+        @Cacheable(value = "jobList", key = "T(java.util.Objects).toString(#request.getQueryString(), '')")
+        public PageResponseDto<JobResponseDto> findAllJobs(
                         @Filter Specification<Job> spec,
-                        @PageableDefault(size = 5) Pageable pageable) {
+                        @PageableDefault(size = 5) Pageable pageable,
+                        HttpServletRequest request) {
                 Page<JobResponseDto> page = jobService.findAllJobs(spec, pageable);
 
-                PageResponseDto<JobResponseDto> res = new PageResponseDto<>(
+                return new PageResponseDto<>(
                                 page.getContent(),
                                 pageable.getPageNumber() + 1,
                                 pageable.getPageSize(),
                                 page.getTotalElements(),
                                 page.getTotalPages());
-
-                return ResponseEntity.ok(res);
         }
 
         @GetMapping("/{id}")
@@ -105,6 +114,7 @@ public class JobController {
         @ApiMessage(value = "Cập nhật Job theo id")
         @PreAuthorize("hasAuthority('PUT /jobs/{id}')")
         @Operation(summary = "Cập nhật Job theo id", description = "Yêu cầu quyền: <b>PUT /jobs/{id}</b>")
+        @CacheEvict(value = "jobList", allEntries = true)
         public ResponseEntity<?> updateJobById(
                         @PathVariable Long id,
                         @Valid @RequestBody JobRequestDto jobRequestDto) {
@@ -115,6 +125,7 @@ public class JobController {
         @ApiMessage(value = "Cập nhật Job theo id thuộc company của người dùng hiện tại")
         @PreAuthorize("hasAuthority('PUT /jobs/company/{id}')")
         @Operation(summary = "Cập nhật Job theo id thuộc company của người dùng hiện tại", description = "Yêu cầu quyền: <b>PUT /jobs/company/{id}</b>")
+        @CacheEvict(value = "jobList", allEntries = true)
         public ResponseEntity<?> updateJobByIdForRecruiterCompany(
                         @PathVariable Long id,
                         @Valid @RequestBody JobRequestDto jobRequestDto) {
@@ -125,6 +136,7 @@ public class JobController {
         @ApiMessage(value = "Xóa Job theo id")
         @PreAuthorize("hasAuthority('DELETE /jobs/{id}')")
         @Operation(summary = "Xóa Job theo id", description = "Yêu cầu quyền: <b>DELETE /jobs/{id}</b>")
+        @CacheEvict(value = "jobList", allEntries = true)
         public ResponseEntity<?> deleteJobById(@PathVariable Long id) {
                 return ResponseEntity.ok(jobService.deleteJobById(id));
         }
@@ -133,6 +145,7 @@ public class JobController {
         @ApiMessage(value = "Xóa Job theo id thuộc company của người dùng hiện tại")
         @PreAuthorize("hasAuthority('DELETE /jobs/company/{id}')")
         @Operation(summary = "Xóa Job theo id thuộc company của người dùng hiện tại", description = "Yêu cầu quyền: <b>DELETE /jobs/company/{id}</b>")
+        @CacheEvict(value = "jobList", allEntries = true)
         public ResponseEntity<?> deleteJobByIdForRecruiterCompany(@PathVariable Long id) {
                 return ResponseEntity.ok(jobService.deleteJobByIdForRecruiterCompany(id));
         }
@@ -154,4 +167,13 @@ public class JobController {
                 return ResponseEntity.ok(jobService.getJobStatsByLevelForRecruiterCompany());
         }
 
+        @GetMapping(value = "/{id}/interview-questions", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+        @PreAuthorize("hasAuthority('GET /jobs/{id}') OR isAnonymous()")
+        @Operation(summary = "Tạo câu hỏi phỏng vấn bằng AI", description = "Stream câu hỏi phỏng vấn được AI tạo dựa trên thông tin công việc. Public endpoint.")
+        @SecurityRequirements()
+        public Flux<String> generateInterviewQuestions(@PathVariable Long id) {
+                return interviewQuestionService.generateInterviewQuestions(id);
+        }
+
 }
+

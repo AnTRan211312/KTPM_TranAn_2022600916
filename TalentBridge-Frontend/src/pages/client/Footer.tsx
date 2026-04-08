@@ -1,60 +1,51 @@
 import { Link } from "react-router-dom";
-import { Star } from "lucide-react";
 
 const Footer = () => {
   return (
     <footer className="relative w-full overflow-hidden bg-gradient-to-r from-orange-500 via-orange-600 to-yellow-500 text-white">
-      <div className="relative mx-auto max-w-7xl px-6 py-12">
+      <div className="relative mx-auto max-w-7xl px-6 py-6">
         {/* Main Content */}
-        <div className="mb-8 flex flex-col items-center justify-between md:flex-row">
+        <div className="mb-4 flex flex-col items-center justify-between md:flex-row">
           {/* Logo Section */}
-          <div className="mb-6 flex items-center space-x-6 md:mb-0">
-            <div className="rounded-2xl border border-white/20 bg-white p-4 shadow">
+          <div className="mb-4 flex items-center space-x-4 md:mb-0">
+            <div className="rounded-xl border border-white/20 bg-white p-2 shadow">
               <Link to="/" className="block">
                 <img
                   src="/web-logo.png"
                   alt="TalentBridge"
-                  className="h-18 w-18 rounded-lg object-contain"
+                  className="h-10 w-10 rounded-lg object-contain"
                 />
               </Link>
             </div>
 
             <div className="text-center md:text-left">
-              <div className="mb-2 flex items-center gap-2">
-                <h4 className="text-2xl font-black tracking-wide uppercase">
-                  TalentBridge
-                </h4>
-              </div>
-              <p className="text-lg font-medium italic">
+              <h4 className="text-lg font-bold tracking-wide uppercase">
+                TalentBridge
+              </h4>
+              <p className="text-xs font-medium italic opacity-90">
                 Kết nối tài năng, tạo dựng tương lai
               </p>
-              <div className="mt-2 flex items-center gap-2">
-                <Star className="h-4 w-4 text-yellow-300" />
-                <span className="text-sm font-medium">
-                  Nền tảng tuyển dụng hàng đầu
-                </span>
-              </div>
             </div>
           </div>
 
           {/* Contact Section */}
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-4">
             <a
               href=""
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/20 hover:bg-orange-100"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/20 transition hover:bg-white/30"
             >
               <img
                 src="facebook-logo.png"
                 alt="Facebook logo"
-                className="h-6 w-6"
+                className="h-5 w-5"
               />
             </a>
 
             <div className="text-center md:text-right">
-              <p className="text-lg font-bold">Kết nối đam mê</p>
-              <div className="mt-1 text-xs text-orange-100">
+              <p className="text-sm font-bold">Kết nối đam mê</p>
+              <div className="text-xs text-orange-100">
                 Founder & Developer
               </div>
             </div>
@@ -62,12 +53,12 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-white/20 pt-6">
-          <div className="flex flex-col items-center justify-between md:flex-row">
-            <p className="mb-2 text-center text-sm font-medium md:mb-0 md:text-left">
+        <div className="border-t border-white/20 pt-4">
+          <div className="flex flex-col items-center justify-between text-xs md:flex-row">
+            <p className="mb-1 text-center font-medium md:mb-0 md:text-left">
               © 2025 TalentBridge. All rights reserved.
             </p>
-            <div className="flex items-center gap-4 text-xs text-orange-100">
+            <div className="flex items-center gap-3 text-orange-100">
               <span>Hệ thống hoạt động ổn định</span>
               <span>•</span>
               <span>Phiên bản 2.0</span>

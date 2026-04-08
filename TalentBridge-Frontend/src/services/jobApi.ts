@@ -1,4 +1,5 @@
 import axiosClient from "@/lib/axiosClient";
+import { consumeSSE } from "@/utils/sseUtils";
 import type {
   ApiResponse,
   PageResponseDto,
@@ -96,4 +97,17 @@ export const getJobStatsByLevel = () => {
 // API lấy thống kê level của job cho công ty của Recruiter
 export const getJobStatsByLevelForRecruiterCompany = () => {
   return axiosClient.get<ApiResponse<JobLevelStats>>("/jobs/company/stats/level");
+};
+
+// API tạo câu hỏi phỏng vấn bằng AI - Streaming version
+export const generateInterviewQuestionsStream = (
+  jobId: number,
+  onChunk: (text: string) => void,
+  onComplete?: () => void,
+  onError?: (error: Error) => void
+) => {
+  const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+  const url = `${baseUrl}/jobs/${jobId}/interview-questions`;
+
+  return consumeSSE(url, { onChunk, onComplete, onError });
 };

@@ -6,6 +6,8 @@ import type {
   ChatSessionDto,
   ChatSessionInfo,
 } from "@/types/chat.d.ts";
+import { consumeSSE } from "@/utils/sseUtils";
+
 
 /**
  * Gửi tin nhắn tới AI (hỗ trợ file attachments)
@@ -28,6 +30,26 @@ export const sendChatMessage = (data: ChatRequest & { files?: File[] }) => {
     headers: {
       "Content-Type": "multipart/form-data",
     },
+  });
+};
+
+/**
+ * Gửi tin nhắn tới AI với SSE streaming
+ * Returns cleanup function to abort the stream
+ */
+export const sendChatMessageStream = (
+  params: { sessionId: string; question: string },
+  onChunk: (text: string) => void,
+  onComplete?: () => void,
+  onError?: (error: Error) => void
+): (() => void) => {
+  const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+  const url = `${baseUrl}/chat-message/stream?sessionId=${encodeURIComponent(params.sessionId)}&question=${encodeURIComponent(params.question)}`;
+
+  return consumeSSE(url, {
+    onChunk,
+    onComplete,
+    onError,
   });
 };
 

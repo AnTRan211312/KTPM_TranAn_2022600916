@@ -11,12 +11,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
-import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
+
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -24,7 +23,6 @@ import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
-import java.util.List;
 
 
 @Configuration
@@ -126,27 +124,27 @@ public class RedisConfig {
     }
 
     // =====================================================================
-    // 4. RedisTemplate cho Chat History (List<ChatMessage>)
-    //    - Lưu lịch sử chat của user với AI
+    // 4. RedisTemplate cho Chat History (từng ChatMessage riêng lẻ)
+    //    - Lưu lịch sử chat của user với AI dưới dạng Redis List
     //    - Key: chat::history:userId:sessionId
-    //    - Value: List<ChatMessage>
+    //    - Value: ChatMessage (mỗi element trong List là 1 message)
+    //    - Dùng RPUSH/LRANGE thay vì đọc-ghi toàn bộ → atomic, không race condition
     // =====================================================================
     @Bean
-    public RedisTemplate<String, List<ChatMessage>> redisChatTemplate(RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, List<ChatMessage>> template = new RedisTemplate<>();
+    public RedisTemplate<String, ChatMessage> redisChatTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, ChatMessage> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
         // KEY
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
 
-        // VALUE - Serialize List<ChatMessage> thành JSON
-        // Sử dụng GenericJackson2JsonRedisSerializer để giữ được generic type
+        // VALUE - Serialize từng ChatMessage thành JSON
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        // Disable tính năng tự động phát hiện properties để tránh serialize lazy loaded entities
         objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        GenericJackson2JsonRedisSerializer valueSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        Jackson2JsonRedisSerializer<ChatMessage> valueSerializer =
+                new Jackson2JsonRedisSerializer<>(objectMapper, ChatMessage.class);
 
         template.setValueSerializer(valueSerializer);
         template.setHashValueSerializer(valueSerializer);
@@ -157,14 +155,31 @@ public class RedisConfig {
 
     // =====================================================================
     // 5. Cấu hình Spring Cache với Redis
+    //    - Dùng JSON serializer thay vì JDK default (dễ debug, nhẹ hơn)
     //    - Thiết lập thời gian sống mặc định cho cache (TTL)
     //    - Chỉ áp dụng cho các cache dùng annotation (@Cacheable, @CacheEvict...)
     // =====================================================================
     @Bean
     public RedisCacheConfiguration cacheConfiguration() {
+        // ObjectMapper hỗ trợ Java 8 Time (Instant, LocalDate, ...)
+        ObjectMapper cacheMapper = new ObjectMapper();
+        cacheMapper.registerModule(new JavaTimeModule());
+        cacheMapper.activateDefaultTyping(
+                cacheMapper.getPolymorphicTypeValidator(),
+                ObjectMapper.DefaultTyping.NON_FINAL,
+                com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY
+        );
+
+        GenericJackson2JsonRedisSerializer jsonSerializer =
+                new GenericJackson2JsonRedisSerializer(cacheMapper);
+
         return RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(15))
-                .disableCachingNullValues();
+                .disableCachingNullValues()
+                .serializeValuesWith(
+                        org.springframework.data.redis.serializer.RedisSerializationContext
+                                .SerializationPair.fromSerializer(jsonSerializer)
+                );
     }
 
     // =====================================================================

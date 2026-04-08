@@ -44,6 +44,23 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
+    // SSE Streaming endpoint for real-time chat
+    @GetMapping(value = "/chat-message/stream", produces = org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PreAuthorize("hasAuthority('POST /chat-message')")
+    @Operation(summary = "Gửi tin nhắn tới AI với SSE streaming", description = "Response được stream từng phần. Yêu cầu quyền: <b>POST /chat-message</b>")
+    public reactor.core.publisher.Flux<String> chatMessageStream(
+            @RequestParam String sessionId,
+            @RequestParam String question,
+            Authentication authentication) {
+
+        ChatRequest request = new ChatRequest();
+        request.setSessionId(sessionId);
+        request.setQuestion(question);
+
+        String userEmail = authentication.getName();
+        return chatService.generationStream(request, userEmail);
+    }
+
     @GetMapping("/chat-history/{sessionId}")
     @ApiMessage(value = "Lấy lịch sử chat thành công")
     @PreAuthorize("hasAuthority('GET /chat-history')")

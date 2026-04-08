@@ -30,17 +30,17 @@ const TopCompaniesSection = () => {
   }, []);
 
   return (
-    <section className="bg-white px-4 py-16">
-      <div className="mx-auto mb-10 max-w-7xl text-center">
-        <h2 className="text-3xl font-bold text-gray-900">
+    <section className="bg-white px-4 py-10">
+      <div className="mx-auto mb-6 max-w-7xl text-center">
+        <h2 className="text-2xl font-bold text-gray-900">
           Top công ty đang tuyển dụng
         </h2>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-1 text-sm text-gray-600">
           Khám phá những công ty hàng đầu với môi trường làm việc lý tưởng
         </p>
       </div>
 
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
         {isLoading && (
           <div className="col-span-5 flex items-center justify-center">
             <LoadingSpinner />
@@ -52,7 +52,7 @@ const TopCompaniesSection = () => {
             <EmptyState
               title="Không tìm thấy công ty nào"
               description="Có thể đã có lỗi xảy ra"
-              icon={<Building2 className="text-muted-foreground h-12 w-12" />}
+              icon={<Building2 className="text-muted-foreground h-10 w-10" />}
             />
           </div>
         )}
@@ -60,26 +60,23 @@ const TopCompaniesSection = () => {
         {!isLoading &&
           companies.length > 0 &&
           companies.map((company) => (
-            <div
+            <Link
               key={company.id}
-              className="rounded-xl border p-5 text-center transition hover:shadow-md"
+              to={`/companies/${company.id}`}
+              className="group flex flex-col items-center rounded-xl border p-4 text-center transition hover:shadow-md"
             >
               <img
                 src={company.logoUrl}
                 alt={company.name}
-                className="mx-auto mb-3 h-16 w-16 object-contain"
+                className="mb-3 h-16 w-16 rounded-xl object-contain"
               />
-              <h3 className="mb-1 h-[100px] text-lg font-semibold text-gray-800">
+              <h3 className="mb-2 line-clamp-2 text-sm font-semibold text-gray-800">
                 {company.name}
               </h3>
-
-              <Link
-                to={`/companies/${company.id}`}
-                className="inline-block text-sm font-medium text-orange-600 hover:underline"
-              >
+              <span className="text-xs font-medium text-orange-600 group-hover:underline">
                 Xem việc làm
-              </Link>
-            </div>
+              </span>
+            </Link>
           ))}
       </div>
     </section>

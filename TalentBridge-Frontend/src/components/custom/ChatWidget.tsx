@@ -14,6 +14,7 @@ import {
   getAllChatSessions,
   getChatHistory,
   sendChatMessage,
+  sendChatMessageStream,
 } from "@/services/chatApi";
 import type { ChatMessageDto, ChatSessionDto } from "@/types/chat.d.ts";
 import { Bot, Loader2, MessageSquare, Send, X, Minimize2, Maximize2, Trash2, Settings, MoreVertical, ChevronUp, Paperclip, FileText } from "lucide-react";
@@ -205,31 +206,89 @@ export default function ChatWidget() {
       };
       setMessages((prev) => [...prev, userMsg]);
 
-      const response = await sendChatMessage({
-        question: userMessage,
-        sessionId: sessionId,
-        files: filesToSend.length > 0 ? filesToSend : undefined,
-      });
+      // Nếu có files, sử dụng API cũ (không hỗ trợ streaming với files)
+      if (filesToSend.length > 0) {
+        const response = await sendChatMessage({
+          question: userMessage,
+          sessionId: sessionId,
+          files: filesToSend,
+        });
 
-      // Thêm response từ AI
+        const aiMsg: ChatMessageDto = {
+          id: Date.now() + 1,
+          role: "ASSISTANT",
+          content: response.data as string,
+          createdAt: new Date().toISOString(),
+          createdBy: "assistant",
+        };
+        setMessages((prev) => [...prev, aiMsg]);
+        setIsLoading(false);
+        await loadSessions();
+        return;
+      }
+
+      // Sử dụng SSE streaming cho text-only messages
+      const aiMsgId = Date.now() + 1;
       const aiMsg: ChatMessageDto = {
-        id: Date.now() + 1,
+        id: aiMsgId,
         role: "ASSISTANT",
-        content: response.data as string,
+        content: "", // Start empty, will be filled by stream
         createdAt: new Date().toISOString(),
         createdBy: "assistant",
       };
       setMessages((prev) => [...prev, aiMsg]);
 
-      // Reload sessions để cập nhật lastMessage
-      await loadSessions();
+      let fullContent = "";
+      sendChatMessageStream(
+        { sessionId, question: userMessage },
+        // onChunk - update AI message with each chunk
+        (chunk) => {
+          fullContent += chunk;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === aiMsgId ? { ...m, content: fullContent } : m
+            )
+          );
+        },
+        // onComplete
+        async () => {
+          setIsLoading(false);
+          await loadSessions();
+        },
+        // onError - fallback to non-streaming
+        async (error) => {
+          console.error("Streaming error, falling back:", error);
+          // Remove empty AI message
+          setMessages((prev) => prev.filter((m) => m.id !== aiMsgId));
+
+          // Fallback to regular API
+          try {
+            const response = await sendChatMessage({
+              question: userMessage,
+              sessionId: sessionId,
+            });
+            const fallbackMsg: ChatMessageDto = {
+              id: Date.now() + 2,
+              role: "ASSISTANT",
+              content: response.data as string,
+              createdAt: new Date().toISOString(),
+              createdBy: "assistant",
+            };
+            setMessages((prev) => [...prev, fallbackMsg]);
+          } catch (fallbackError) {
+            toast.error("Không thể gửi tin nhắn. Vui lòng thử lại");
+          }
+          setIsLoading(false);
+          await loadSessions();
+        }
+      );
     } catch (error: any) {
+      console.error("Chat Message Error:", error);
       toast.error(
         error.response?.data?.message || "Không thể gửi tin nhắn. Vui lòng thử lại",
       );
       setInputMessage(userMessage);
       setSelectedFiles(filesToSend);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -517,33 +576,45 @@ export default function ChatWidget() {
                               {message.attachmentUrls && message.attachmentUrls.length > 0 && (
                                 <div className="mt-2 flex flex-wrap gap-2">
                                   {message.attachmentUrls.map((url, idx) => {
-                                    const type = message.attachmentTypes?.[idx] || "";
-                                    const isImage = type.startsWith("image/");
+                                    const type = (message.attachmentTypes?.[idx] || "").trim().toLowerCase();
+                                    const isImage = type.startsWith("image/") ||
+                                      url.match(/\.(jpeg|jpg|gif|png|webp|svg)/i) ||
+                                      url.startsWith("blob:");
 
                                     return isImage ? (
-                                      <img
-                                        key={idx}
-                                        src={url}
-                                        alt={`attachment-${idx}`}
-                                        className="max-w-[200px] rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                        onClick={() => window.open(url, "_blank")}
-                                      />
+                                      <div key={idx} className="relative mt-1">
+                                        <img
+                                          src={url}
+                                          alt={`attachment-${idx}`}
+                                          className="max-w-full sm:max-w-[280px] rounded-lg border border-white/20 shadow-sm cursor-pointer hover:opacity-90 transition-opacity bg-white/10"
+                                          style={{ minHeight: "100px", objectFit: "contain" }}
+                                          onClick={() => window.open(url, "_blank")}
+                                          onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.style.display = 'none';
+                                            // Fallback to link if image fails
+                                          }}
+                                        />
+                                      </div>
                                     ) : (
                                       <a
                                         key={idx}
                                         href={url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${message.role.toUpperCase() === "USER"
-                                          ? "bg-blue-700 hover:bg-blue-800"
+                                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all ${message.role.toUpperCase() === "USER"
+                                          ? "bg-blue-700/50 hover:bg-blue-800/50 text-white"
                                           : "bg-gray-200 hover:bg-gray-300 text-gray-700"
                                           }`}
                                       >
-                                        <FileText className="h-3 w-3" />
-                                        {type.includes("pdf") ? "PDF" : "Document"} {idx + 1}
+                                        <FileText className="h-4 w-4" />
+                                        <span className="truncate max-w-[120px]">
+                                          {type.includes("pdf") ? "PDF Document" : "Tài liệu"} {idx + 1}
+                                        </span>
                                       </a>
                                     );
                                   })}
+
                                 </div>
                               )}
 

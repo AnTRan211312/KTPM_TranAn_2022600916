@@ -36,13 +36,14 @@ public class ResumeController {
         @PostMapping
         @ApiMessage(value = "Tạo Resume")
         @PreAuthorize("hasAuthority('POST /resumes')")
-        @Operation(summary = "Tạo Resume", description = "Yêu cầu quyền: <b>POST /resumes</b>")
+        @Operation(summary = "Tạo Resume", description = "Yêu cầu quyền: <b>POST /resumes</b>. Có thể tải file PDF mới hoặc sử dụng CV đã nộp trước đó bằng existingResumeId.")
         public ResponseEntity<?> saveResume(
                         @Valid @RequestPart("resume") ResumeRequestDto resumeRequestDto,
-                        @RequestPart(value = "pdfFile") MultipartFile pdfFile) {
+                        @RequestPart(value = "pdfFile", required = false) MultipartFile pdfFile,
+                        @RequestParam(value = "existingResumeId", required = false) Long existingResumeId) {
                 return ResponseEntity
                                 .status(HttpStatus.CREATED)
-                                .body(resumeService.saveResume(resumeRequestDto, pdfFile));
+                                .body(resumeService.saveResume(resumeRequestDto, pdfFile, existingResumeId));
         }
 
         @GetMapping("/check-applied/{jobId}")
@@ -111,6 +112,14 @@ public class ResumeController {
                 return ResponseEntity.ok(res);
         }
 
+        @GetMapping("/me/files")
+        @ApiMessage(value = "Lấy danh sách file CV đã nộp của người dùng hiện tại")
+        @PreAuthorize("hasAuthority('GET /resumes/me')")
+        @Operation(summary = "Lấy danh sách CV đã nộp", description = "Trả về danh sách các file CV mà người dùng đã nộp trước đó, dùng để tái sử dụng khi nộp CV mới. Yêu cầu quyền: <b>GET /resumes/me</b>")
+        public ResponseEntity<?> getUserResumeFiles() {
+                return ResponseEntity.ok(resumeService.getUserResumeFiles());
+        }
+
         @DeleteMapping("/me/jobs/{jobId}")
         @ApiMessage(value = "Xóa resume theo job id của người dùng hiện tại")
         @PreAuthorize("hasAuthority('DELETE /resumes/me/jobs/{jobId}')")
@@ -173,22 +182,32 @@ public class ResumeController {
                 return ResponseEntity.ok(resumeService.getResumeStatsByStatusForRecruiterCompany());
         }
 
-        @PostMapping("/{id}/analyze")
-        @ApiMessage(value = "Phân tích CV bằng AI")
+        // SSE Streaming endpoint for CV analysis
+        @GetMapping(value = "/{id}/analyze", produces = org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE)
         @PreAuthorize("hasAuthority('GET /resumes/company')")
-        @Operation(summary = "Phân tích CV đã nộp bằng AI", description = "Sử dụng AI để phân tích độ phù hợp của CV với công việc. Yêu cầu quyền: <b>GET /resumes/company</b>")
-        public ResponseEntity<?> analyzeResume(@PathVariable Long id) {
-                return ResponseEntity.ok(cvAnalysisService.analyzeResume(id));
+        @Operation(summary = "Phân tích CV với SSE streaming", description = "Stream tiến trình và kết quả phân tích CV. Yêu cầu quyền: <b>GET /resumes/company</b>")
+        public reactor.core.publisher.Flux<String> analyzeResume(@PathVariable Long id) {
+                return cvAnalysisService.analyzeResume(id);
         }
 
-        @PostMapping("/analyze-preview")
-        @ApiMessage(value = "Phân tích CV preview bằng AI")
+        // SSE Streaming endpoint for CV preview analysis
+        @PostMapping(value = "/analyze-preview", produces = org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE)
         @PreAuthorize("hasAuthority('POST /resumes')")
-        @Operation(summary = "Phân tích CV trước khi nộp", description = "Cho phép người dùng phân tích độ phù hợp của CV với công việc trước khi nộp đơn. Yêu cầu quyền: <b>POST /resumes</b>")
-        public ResponseEntity<?> analyzeResumePreview(
+        @Operation(summary = "Phân tích CV preview với SSE streaming", description = "Stream phân tích CV trước khi nộp. Yêu cầu quyền: <b>POST /resumes</b>")
+        public reactor.core.publisher.Flux<String> analyzeResumePreview(
                         @RequestPart("pdfFile") MultipartFile pdfFile,
                         @RequestParam Long jobId) {
-                return ResponseEntity.ok(cvAnalysisService.analyzeResumePreview(pdfFile, jobId));
+                return cvAnalysisService.analyzeResumePreview(pdfFile, jobId);
+        }
+
+        // SSE Streaming endpoint for analyzing existing CV against a specific job
+        @GetMapping(value = "/me/{resumeId}/analyze", produces = org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE)
+        @PreAuthorize("hasAuthority('POST /resumes')")
+        @Operation(summary = "Phân tích CV đã nộp so với công việc cụ thể", description = "Stream phân tích CV đã nộp trước đó so với công việc đang ứng tuyển. Yêu cầu quyền: <b>POST /resumes</b>")
+        public reactor.core.publisher.Flux<String> analyzeExistingResumeForJob(
+                        @PathVariable Long resumeId,
+                        @RequestParam Long jobId) {
+                return cvAnalysisService.analyzeExistingResumeForJob(resumeId, jobId);
         }
 
 }

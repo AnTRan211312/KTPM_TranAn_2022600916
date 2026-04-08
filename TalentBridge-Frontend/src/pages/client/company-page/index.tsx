@@ -75,34 +75,30 @@ export default function CompanyClientPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="relative w-full bg-gradient-to-r from-orange-500 via-orange-600 to-yellow-500 px-4 py-16">
-        <div className="container mx-auto text-center">
-          <div className="mb-6">
-            <h1 className="mb-4 text-5xl font-bold text-white">Công ty</h1>
-            <p className="mx-auto max-w-2xl text-xl text-orange-100">
-              Khám phá các công ty hàng đầu và cơ hội nghề nghiệp
+      <div className="mx-auto w-4/5 pt-8">
+        {/* Feature Tips */}
+        <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+            <h3 className="mb-1 text-sm font-bold text-green-800">
+              🏢 Khám phá công ty
+            </h3>
+            <p className="text-xs text-green-600">
+              Tìm hiểu văn hóa công ty, đánh giá từ nhân viên và xem danh sách
+              việc làm đang tuyển dụng
             </p>
           </div>
-
-          <div className="mt-8 flex justify-center gap-8">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-white">500+</div>
-              <div className="text-sm text-orange-200">Công ty</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-white">2000+</div>
-              <div className="text-sm text-orange-200">Việc làm</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-white">10k+</div>
-              <div className="text-sm text-orange-200">Ứng viên</div>
-            </div>
+          <div className="rounded-lg border border-orange-200 bg-orange-50 p-3">
+            <h3 className="mb-1 text-sm font-bold text-orange-800">
+              💼 Cơ hội việc làm
+            </h3>
+            <p className="text-xs text-orange-600">
+              Mỗi công ty có nhiều vị trí đang tuyển - click vào để xem chi tiết
+              và ứng tuyển ngay
+            </p>
           </div>
         </div>
-      </div>
 
-      <div className="mx-auto w-4/5">
-        <div className="my-12">
+        <div className="my-6">
           <CompanySearchSection
             searchName={searchName}
             setSearchName={setSearchName}

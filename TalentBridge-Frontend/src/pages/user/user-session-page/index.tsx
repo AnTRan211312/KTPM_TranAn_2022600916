@@ -1,7 +1,9 @@
-import { getErrorMessage } from "@/features/slices/auth/authThunk";
+import { getErrorMessage, logout } from "@/features/slices/auth/authThunk";
 import { getSessions, removeSessionId } from "@/services/authApi";
 import type { SessionMetaResponse } from "@/types/user";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "@/features/hooks";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +18,10 @@ import { formatLoginTime } from "@/utils/convertHelper";
 import { DeleteConfirmDialog } from "@/components/custom/DeleteConfirmationDialog";
 
 const UserSessionPage = () => {
+  // Hooks
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
   // Data
   const [sessions, setSessions] = useState<SessionMetaResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,11 +55,19 @@ const UserSessionPage = () => {
     fetchSessions();
   }, []);
 
-  const handleLogoutSession = async (sessionId: string) => {
+  const handleLogoutSession = async (sessionId: string, isCurrent: boolean) => {
     try {
       setIsLoggingOut(sessionId);
       await removeSessionId(sessionId);
       toast.success("Đăng xuất phiên thành công");
+
+      // Nếu đăng xuất phiên hiện tại, logout và redirect về trang auth
+      if (isCurrent) {
+        await dispatch(logout());
+        navigate("/auth");
+        return;
+      }
+
       fetchSessions();
     } catch (err) {
       toast.error(getErrorMessage(err, "Không thể đăng xuất phiên này"));
@@ -106,11 +120,10 @@ const UserSessionPage = () => {
             sessions.map((session, index) => (
               <Card
                 key={index}
-                className={`border-2 shadow-lg transition-all duration-200 hover:shadow-xl ${
-                  session.current
-                    ? "border-orange-400 bg-gradient-to-r from-orange-50 to-amber-50"
-                    : "border-orange-200 hover:border-orange-300"
-                }`}
+                className={`border-2 shadow-lg transition-all duration-200 hover:shadow-xl ${session.current
+                  ? "border-green-400 bg-gradient-to-r from-green-50/50 to-orange-50/50"
+                  : "border-gray-200 hover:border-gray-300"
+                  }`}
               >
                 <CardHeader className="pb-3">
                   <div className="grid grid-cols-3">
@@ -145,7 +158,7 @@ const UserSessionPage = () => {
                       <div className="flex items-center justify-center">
                         <DeleteConfirmDialog
                           onConfirm={() =>
-                            handleLogoutSession(session.sessionId)
+                            handleLogoutSession(session.sessionId, session.current)
                           }
                         >
                           <Button
@@ -184,10 +197,12 @@ const UserSessionPage = () => {
                   </div>
 
                   {session.current && (
-                    <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-3">
+                    <div className="mt-4 rounded-lg border border-green-200 bg-green-50/50 p-3">
                       <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-green-600" />
-                        <p className="text-sm font-medium text-green-800">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-100">
+                          <Shield className="h-4 w-4 text-orange-600" />
+                        </div>
+                        <p className="text-sm font-semibold text-green-800">
                           Đây là phiên đăng nhập hiện tại của bạn
                         </p>
                       </div>

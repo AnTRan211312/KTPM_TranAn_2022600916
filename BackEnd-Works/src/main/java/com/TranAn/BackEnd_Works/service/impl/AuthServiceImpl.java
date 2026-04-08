@@ -147,7 +147,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public List<SessionMetaResponse> getAllSelfSessionMetas() {
+    public List<SessionMetaResponse> getAllSelfSessionMetas(String refreshToken) {
         // Lấy email từ JWT trong Authorization header (SecurityContext)
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -156,8 +156,8 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng"));
         String userId = user.getId().toString();
 
-        // Truyền null cho refreshToken - không thể xác định current session
-        return refreshTokenRedisService.getAllSessionMetas(userId, null);
+        // Truyền refreshToken để xác định phiên hiện tại
+        return refreshTokenRedisService.getAllSessionMetas(userId, refreshToken);
     }
 
     @Override

@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
+import reactor.core.publisher.Flux;
 
 @Service
 @RequiredArgsConstructor
@@ -70,9 +71,9 @@ public class ChatServiceImpl implements ChatService {
                     .limit(MAX_HISTORY_MESSAGES)
                     .collect(Collectors.toList());
 
-            // Cache vào Redis
+            // Cache vào Redis (bulk load toàn bộ từ DB)
             if (!history.isEmpty()) {
-                chatRedisService.saveChatHistory(userId, request.getSessionId(), history, REDIS_EXPIRE);
+                chatRedisService.bulkLoadHistory(userId, request.getSessionId(), history, REDIS_EXPIRE);
             }
         }
 
@@ -89,7 +90,7 @@ public class ChatServiceImpl implements ChatService {
                 String folder = "chat-attachments";
 
                 // Upload to S3 (don't get public URL yet)
-                String s3Key = s3Service.uploadFile(file, folder, fileName, false);
+                s3Service.uploadFile(file, folder, fileName, false);
 
                 // Generate presigned URL valid for 1 hour (enough for AI to download)
                 String presignedUrl = s3Service.generatePresignedUrl(
@@ -180,6 +181,74 @@ public class ChatServiceImpl implements ChatService {
         return response;
     }
 
+    @Override
+    public Flux<String> generationStream(ChatRequest request, String userEmail) {
+        // 1. Lấy thông tin user
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with email: " + userEmail));
+
+        String userId = user.getId().toString();
+
+        // 2. Lấy lịch sử từ Redis trước
+        List<ChatMessage> history = chatRedisService.getChatHistory(userId, request.getSessionId());
+
+        // 3. Nếu Redis không có, load từ Database
+        if (history.isEmpty()) {
+            history = chatMessageRepository
+                    .findByUserAndSessionIdOrderByCreatedAtAsc(user, request.getSessionId())
+                    .stream()
+                    .limit(MAX_HISTORY_MESSAGES)
+                    .collect(Collectors.toList());
+
+            // Cache vào Redis (bulk load toàn bộ từ DB)
+            if (!history.isEmpty()) {
+                chatRedisService.bulkLoadHistory(userId, request.getSessionId(), history, REDIS_EXPIRE);
+            }
+        }
+
+        // 4. Lưu message của user trước
+        ChatMessage userMessage = ChatMessage.builder()
+                .user(user)
+                .sessionId(request.getSessionId())
+                .role(MessageRole.USER)
+                .content(request.getQuestion())
+                .build();
+
+        chatMessageRepository.save(userMessage);
+        chatRedisService.addMessage(userId, request.getSessionId(), userMessage, REDIS_EXPIRE);
+
+        log.info("User {} sent streaming message in session {}", user.getEmail(), request.getSessionId());
+
+        // 5. Xây dựng prompt với lịch sử
+        String promptWithHistory = buildPromptWithHistory(history, request.getQuestion());
+
+        // 6. Accumulator for full response
+        StringBuilder responseBuilder = new StringBuilder();
+
+        // 7. Stream response và lưu khi hoàn tất
+        return chatClient.prompt()
+                .user(promptWithHistory)
+                .stream()
+                .content()
+                .doOnNext(chunk -> responseBuilder.append(chunk))
+                .doOnComplete(() -> {
+                    // Lưu message AI sau khi stream hoàn tất
+                    ChatMessage assistantMessage = ChatMessage.builder()
+                            .user(user)
+                            .sessionId(request.getSessionId())
+                            .role(MessageRole.ASSISTANT)
+                            .content(responseBuilder.toString())
+                            .build();
+
+                    chatMessageRepository.save(assistantMessage);
+                    chatRedisService.addMessage(userId, request.getSessionId(), assistantMessage, REDIS_EXPIRE);
+
+                    log.info("AI streaming completed for session {}", request.getSessionId());
+                })
+                .doOnError(
+                        e -> log.error("Streaming error for session {}: {}", request.getSessionId(), e.getMessage()));
+    }
+
     private String buildPromptWithHistory(List<ChatMessage> history, String currentQuestion) {
         StringBuilder prompt = new StringBuilder();
 
@@ -213,9 +282,9 @@ public class ChatServiceImpl implements ChatService {
         if (history.isEmpty()) {
             history = chatMessageRepository.findByUserAndSessionIdOrderByCreatedAtAsc(user, sessionId);
 
-            // Cache vào Redis
+            // Cache vào Redis (bulk load toàn bộ từ DB)
             if (!history.isEmpty()) {
-                chatRedisService.saveChatHistory(userId, sessionId, history, REDIS_EXPIRE);
+                chatRedisService.bulkLoadHistory(userId, sessionId, history, REDIS_EXPIRE);
             }
         }
 
@@ -375,7 +444,7 @@ public class ChatServiceImpl implements ChatService {
             return new ArrayList<>();
         }
         try {
-            return objectMapper.readValue(json, List.class);
+            return objectMapper.readValue(json, new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {});
         } catch (JsonProcessingException e) {
             log.error("Error parsing JSON to list", e);
             return new ArrayList<>();

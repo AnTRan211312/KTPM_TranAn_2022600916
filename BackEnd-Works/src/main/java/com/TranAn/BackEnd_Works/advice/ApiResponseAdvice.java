@@ -33,7 +33,6 @@ public class ApiResponseAdvice implements ResponseBodyAdvice<Object> {
     );
     private static final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
-
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -48,24 +47,44 @@ public class ApiResponseAdvice implements ResponseBodyAdvice<Object> {
         Class<?> returnTypeClass = returnType.getParameterType();
         return returnTypeClass != byte[].class
                 && !org.springframework.core.io.Resource.class.isAssignableFrom(returnTypeClass)
-                && !org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody.class.isAssignableFrom(returnTypeClass);
+                && !org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody.class
+                        .isAssignableFrom(returnTypeClass)
+                && !returnTypeClass.getName().startsWith("reactor.core.publisher.")
+                && !org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter.class
+                        .isAssignableFrom(returnTypeClass);
     }
 
     @Override
-    public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
+    public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType,
+            Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request,
+            ServerHttpResponse response) {
         HttpServletResponse servletResponse = ((ServletServerHttpResponse) response).getServletResponse();
         int status = servletResponse.getStatus();
-        if(body instanceof ApiResponse<?> || body instanceof String)
+
+        // If body is already ApiResponse or String, return as is
+        if (body instanceof ApiResponse<?> || body instanceof String) {
             return body;
-        ApiMessage apiMessage =returnType.getMethodAnnotation(ApiMessage.class);
-        if(status >= 400)
+        }
+
+        // Special handling for StringHttpMessageConverter to avoid ClassCastException
+        if (selectedConverterType.getName().contains("StringHttpMessageConverter")) {
+            // StringHttpMessageConverter expects a String. If we return ApiResponse here,
+            // it will crash.
+            // Since line 58 already returned if body was a String, if we are here, body is
+            // likely null or another object.
+            // In these cases, we should not wrap into ApiResponse if the converter can only
+            // handle Strings.
+            return body;
+        }
+
+        ApiMessage apiMessage = returnType.getMethodAnnotation(ApiMessage.class);
+        if (status >= 400) {
             return new ApiResponse<>(
                     apiMessage == null ? "Fail" : apiMessage.value(),
-                    status
-            );
+                    status);
+        }
         return new ApiResponse<>(
                 apiMessage == null ? "Success" : apiMessage.value(),
-                body
-        );
+                body);
     }
 }

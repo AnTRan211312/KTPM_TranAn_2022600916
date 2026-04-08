@@ -2,6 +2,10 @@ package com.TranAn.BackEnd_Works.repository;
 
 import com.TranAn.BackEnd_Works.model.Company;
 import com.TranAn.BackEnd_Works.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -46,4 +50,14 @@ public interface UserRepository extends
 
     // Tìm tất cả users có role cụ thể (ADMIN, RECRUITER, etc.)
     List<User> findByRole_Name(String roleName);
+
+    // ===== FIX N+1: Override findAll với EntityGraph =====
+
+    /**
+     * Override findAll từ JpaSpecificationExecutor — load user kèm company, logo, role trong 1 query.
+     * Spring Data JPA sẽ dùng EntityGraph này thay vì toạo derived query.
+     */
+    @Override
+    @EntityGraph(attributePaths = { "company", "company.companyLogo", "role" })
+    Page<User> findAll(Specification<User> spec, Pageable pageable);
 }

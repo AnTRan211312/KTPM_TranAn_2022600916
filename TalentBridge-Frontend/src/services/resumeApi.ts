@@ -1,4 +1,6 @@
 import axiosClient from "@/lib/axiosClient";
+import { consumeSSE, consumeSSEWithBody } from "@/utils/sseUtils";
+
 import type {
   ApiResponse,
   PageResponseDto,
@@ -7,7 +9,9 @@ import type {
 import type {
   ResumeForDisplayResponseDto,
   UpdateResumeStatusRequestDto,
+  UserResumeFileDto,
 } from "@/types/resume";
+
 
 // Types cho stats
 export interface ResumeStatusStats {
@@ -32,12 +36,18 @@ export const checkApplied = (jobId: number) => {
   return axiosClient.get<ApiResponse<boolean>>(`/resumes/check-applied/${jobId}`);
 };
 
-export const saveResume = (formData: FormData) => {
-  return axiosClient.post("/resumes", formData, {
+export const saveResume = (formData: FormData, existingResumeId?: number) => {
+  const params = existingResumeId ? `?existingResumeId=${existingResumeId}` : '';
+  return axiosClient.post(`/resumes${params}`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
   });
+};
+
+// API lấy danh sách CV đã nộp của user hiện tại
+export const getUserResumeFiles = () => {
+  return axiosClient.get<ApiResponse<UserResumeFileDto[]>>("/resumes/me/files");
 };
 
 export const findAllResumes = ({
@@ -132,22 +142,48 @@ export interface CVAnalysisResponse {
   resumeId?: number;
 }
 
-// API phân tích CV đã nộp (dành cho Recruiter)
-export const analyzeResume = (resumeId: number) => {
-  return axiosClient.post<ApiResponse<CVAnalysisResponse>>(
-    `/resumes/${resumeId}/analyze`,
-  );
+// API phân tích CV đã nộp (dành cho Recruiter) - Streaming version
+export const analyzeResumeStream = (
+  resumeId: number,
+  onChunk: (text: string) => void,
+  onComplete?: () => void,
+  onError?: (error: Error) => void
+) => {
+  const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+  const url = `${baseUrl}/resumes/${resumeId}/analyze`;
+
+  return consumeSSE(url, { onChunk, onComplete, onError });
 };
 
-// API phân tích CV preview trước khi nộp (dành cho User)
-export const analyzeResumePreview = (formData: FormData, jobId: number) => {
-  return axiosClient.post<ApiResponse<CVAnalysisResponse>>(
-    `/resumes/analyze-preview?jobId=${jobId}`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    },
-  );
+
+// API phân tích CV preview trước khi nộp (dành cho User) - Streaming version
+export const analyzeResumePreviewStream = (
+  formData: FormData,
+  jobId: number,
+  onChunk: (text: string) => void,
+  onComplete?: () => void,
+  onError?: (error: Error) => void
+) => {
+  const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+  const url = `${baseUrl}/resumes/analyze-preview?jobId=${jobId}`;
+
+  return consumeSSEWithBody(url, formData, {
+    onChunk,
+    onComplete,
+    onError,
+  });
+};
+
+// API phân tích CV đã nộp trước đó so với công việc đang ứng tuyển (dành cho User) - Streaming version
+export const analyzeExistingResumeStream = (
+  resumeId: number,
+  jobId: number,
+  onChunk: (text: string) => void,
+  onComplete?: () => void,
+  onError?: (error: Error) => void
+) => {
+  const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+  const url = `${baseUrl}/resumes/me/${resumeId}/analyze?jobId=${jobId}`;
+
+  return consumeSSE(url, { onChunk, onComplete, onError });
 };

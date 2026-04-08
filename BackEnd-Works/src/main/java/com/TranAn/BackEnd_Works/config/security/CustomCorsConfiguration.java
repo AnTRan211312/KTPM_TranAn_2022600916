@@ -19,7 +19,10 @@ public class CustomCorsConfiguration {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+        configuration.setAllowedHeaders(
+                Arrays.asList("Authorization", "Content-Type", "Accept", "Cache-Control", "X-Accel-Buffering"));
+        configuration.setExposedHeaders(
+                Arrays.asList("Content-Type", "Cache-Control", "Connection", "X-Accel-Buffering", "Transfer-Encoding"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
@@ -29,22 +32,25 @@ public class CustomCorsConfiguration {
 
     }
 
-//    @Bean
-//    public CorsFilter corsFilter() {
-//        CorsConfiguration configuration = new CorsConfiguration();
-//
-//        // Nếu chỉ rõ 1 domain thì đặt đúng domain CloudFront của bạn vào đây
-//        configuration.setAllowedOriginPatterns(Arrays.asList("https://d2bud8923lpalk.cloudfront.net","http://localhost:3000"));
-//
-//
-//        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-//        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
-//        configuration.setAllowCredentials(true);
-//        configuration.setMaxAge(3600L);
-//
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", configuration);
-//
-//        return new CorsFilter(source);
-//    }
+    // @Bean
+    // public CorsFilter corsFilter() {
+    // CorsConfiguration configuration = new CorsConfiguration();
+    //
+    // // Nếu chỉ rõ 1 domain thì đặt đúng domain CloudFront của bạn vào đây
+    // configuration.setAllowedOriginPatterns(Arrays.asList("https://d2bud8923lpalk.cloudfront.net","http://localhost:3000"));
+    //
+    //
+    // configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE",
+    // "OPTIONS"));
+    // configuration.setAllowedHeaders(Arrays.asList("Authorization",
+    // "Content-Type", "Accept"));
+    // configuration.setAllowCredentials(true);
+    // configuration.setMaxAge(3600L);
+    //
+    // UrlBasedCorsConfigurationSource source = new
+    // UrlBasedCorsConfigurationSource();
+    // source.registerCorsConfiguration("/**", configuration);
+    //
+    // return new CorsFilter(source);
+    // }
 }

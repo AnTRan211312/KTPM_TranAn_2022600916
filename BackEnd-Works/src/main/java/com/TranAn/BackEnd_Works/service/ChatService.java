@@ -4,15 +4,21 @@ import com.TranAn.BackEnd_Works.dto.request.ChatRequest;
 import com.TranAn.BackEnd_Works.dto.response.ChatMessageDto;
 import com.TranAn.BackEnd_Works.dto.response.ChatSessionDto;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
 public interface ChatService {
 
     /**
-     * Generate AI response for user's question
+     * Generate AI response for user's question (blocking)
      */
     String generation(ChatRequest request, List<MultipartFile> files, String userEmail);
+
+    /**
+     * Generate AI response with SSE streaming (non-blocking)
+     */
+    Flux<String> generationStream(ChatRequest request, String userEmail);
 
     /**
      * Get chat history for a specific session
