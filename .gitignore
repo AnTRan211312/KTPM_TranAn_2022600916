@@ -19,9 +19,6 @@ BackEnd-Works/build/
 BackEnd-Works/.mvn/wrapper/maven-wrapper.jar
 BackEnd-Works/*.log
 
-# Sensitive configuration files
-BackEnd-Works/src/main/resources/application.properties
-BackEnd-Works/src/main/resources/application_secret.properties
 
 # =========================
 # Frontend - React/Vite
