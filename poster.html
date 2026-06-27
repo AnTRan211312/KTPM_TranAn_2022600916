@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Poster – TalentBridge | HaUI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+      background: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .page {
+      width: 794px;
+      min-height: 1123px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.18);
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      background: #1565C0;
+      padding: 0;
+      display: flex;
+      align-items: stretch;
+      position: relative;
+      overflow: hidden;
+      min-height: 95px;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 10px 16px 10px 20px;
+      flex: 1;
+      z-index: 2;
+    }
+
+    .header-school-name {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+
+    .header-faculty {
+      color: #fff;
+      font-size: 12.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-top: 2px;
+      opacity: 0.92;
+    }
+
+    .header-logo-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-top: 8px;
+      background: #fff;
+      border-radius: 4px;
+      padding: 4px 10px 4px 6px;
+      align-self: flex-start;
+    }
+
+    .logo-icon-circle {
+      width: 30px;
+      height: 30px;
+      background: #e53935;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 2px solid #FFC107;
+    }
+
+    .logo-icon-circle svg { width: 18px; height: 18px; }
+
+    .logo-haui-text {
+      color: #1565C0;
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      margin-left: 6px;
+      line-height: 1;
+    }
+
+    .logo-divider {
+      width: 1.5px;
+      background: #94a3b8;
+      align-self: stretch;
+      margin: 2px 8px;
+    }
+
+    .logo-text-small {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .logo-text-small span {
+      color: #334155;
+      font-size: 7px;
+      font-weight: 700;
+      text-transform: uppercase;
+      line-height: 1.4;
+      letter-spacing: 0.4px;
+    }
+
+    /* Right stripe with curved wave + label */
+    .header-right {
+      width: 260px;
+      flex-shrink: 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      z-index: 1;
+    }
+
+    .header-wave-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .header-wave-bg::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; bottom: 0;
+      width: 220px;
+      background: #1976D2;
+      border-radius: 60% 0 0 60% / 50% 0 0 50%;
+    }
+
+    .header-wave-bg::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; bottom: 0;
+      width: 190px;
+      background: #FFC107;
+      border-radius: 55% 0 0 55% / 50% 0 0 50%;
+    }
+
+    .header-label {
+      position: relative;
+      z-index: 3;
+      color: #1a1a1a;
+      font-size: 16px;
+      font-weight: 800;
+      padding-right: 20px;
+      letter-spacing: 0.2px;
+      text-shadow: none;
+    }
+
+    /* ===== BODY ===== */
+    .body {
+      flex: 1;
+      padding: 22px 26px 18px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* --- Title block --- */
+    .title-block {
+      text-align: center;
+      border-bottom: 3px solid #1565C0;
+      padding-bottom: 14px;
+    }
+
+    .project-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #1565C0;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+    }
+
+    .project-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: #1565C0;
+      line-height: 1.15;
+      letter-spacing: -0.3px;
+    }
+
+    .project-title span {
+      color: #FFC107;
+    }
+
+    .project-subtitle {
+      font-size: 13px;
+      color: #475569;
+      font-weight: 500;
+      margin-top: 5px;
+      font-style: italic;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .info-item {
+      font-size: 12px;
+      color: #334155;
+      font-weight: 500;
+    }
+
+    .info-item strong {
+      color: #1565C0;
+      font-weight: 700;
+    }
+
+    /* --- Section title --- */
+    .sec-title {
+      background: #1565C0;
+      color: #fff;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* --- Two column layout --- */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .col { display: flex; flex-direction: column; gap: 14px; }
+
+    /* --- Card --- */
+    .card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      background: #f8fafc;
+    }
+
+    /* --- Intro --- */
+    .intro-text {
+      font-size: 12.5px;
+      color: #334155;
+      line-height: 1.65;
+      text-align: justify;
+    }
+
+    /* --- Tech stack --- */
+    .tech-list { display: flex; flex-direction: column; gap: 6px; }
+
+    .tech-row { display: flex; align-items: flex-start; gap: 6px; }
+
+    .tech-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #1565C0;
+      min-width: 72px;
+      padding-top: 1px;
+    }
+
+    .tech-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .badge {
+      background: #1565C0;
+      color: #fff;
+      font-size: 9.5px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 99px;
+      white-space: nowrap;
+    }
+
+    .badge.gold { background: #FFC107; color: #1a1a1a; }
+    .badge.green { background: #16a34a; }
+    .badge.red { background: #dc2626; }
+    .badge.gray { background: #64748b; }
+
+    /* --- Feature groups --- */
+    .feature-group { margin-bottom: 8px; }
+    .feature-group:last-child { margin-bottom: 0; }
+
+    .feature-group-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #1565C0;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding-left: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .feature-list li {
+      font-size: 11px;
+      color: #475569;
+      line-height: 1.45;
+      padding-left: 12px;
+      position: relative;
+    }
+
+    .feature-list li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: #FFC107;
+      font-size: 9px;
+      top: 2px;
+    }
+
+    /* --- Architecture --- */
+    .arch-diagram {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 0;
+    }
+
+    .arch-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .arch-box {
+      background: #1565C0;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .arch-box.gold { background: #FFC107; color: #1a1a1a; }
+    .arch-box.green { background: #16a34a; }
+    .arch-box.gray { background: #475569; }
+    .arch-box.red { background: #dc2626; }
+    .arch-box.orange { background: #ea580c; }
+
+    .arch-arrow {
+      font-size: 14px;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+
+    .arch-label {
+      font-size: 8.5px;
+      color: #64748b;
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* --- Results --- */
+    .result-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+
+    .result-list li {
+      font-size: 11.5px;
+      color: #334155;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      line-height: 1.4;
+    }
+
+    .check {
+      color: #16a34a;
+      font-size: 13px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* --- Screenshots placeholder --- */
+    .screenshots {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .screenshot-box {
+      border: 2px dashed #cbd5e1;
+      border-radius: 6px;
+      height: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #f1f5f9;
+      gap: 4px;
+    }
+
+    .screenshot-box .ss-icon { font-size: 20px; }
+
+    .screenshot-box .ss-label {
+      font-size: 9px;
+      color: #94a3b8;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      background: #1565C0;
+      color: #fff;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    @media print {
+      body { background: none; padding: 0; }
+      .page { box-shadow: none; width: 100%; min-height: 100vh; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-school-name">Đại học Công nghiệp Hà Nội</div>
+      <div class="header-faculty">Trường Công nghệ Thông tin &amp; Truyền thông</div>
+      <div class="header-logo-row">
+        <div class="logo-icon-circle">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" fill="#e53935"/>
+            <text x="12" y="16" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="Arial">H</text>
+          </svg>
+        </div>
+        <div class="logo-haui-text">HaUI</div>
+        <div class="logo-divider"></div>
+        <div class="logo-text-small">
+          <span>School of Information</span>
+          <span>&amp; Communications Technology</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-wave-bg"></div>
+      <div class="header-label">Đồ án tốt nghiệp</div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- TITLE -->
+    <div class="title-block">
+      <div class="project-label">ĐỒ ÁN TỐT NGHIỆP ĐẠI HỌC &nbsp;·&nbsp; NGÀNH KỸ THUẬT PHẦN MỀM</div>
+      <div class="project-title">XÂY DỰNG WEBSITE TUYỂN DỤNG<br><span>ANIT TALENT BRIDGE</span></div>
+      <div class="project-subtitle">"Kết nối Ứng viên &amp; Nhà tuyển dụng thông minh với sức mạnh của Trí tuệ Nhân tạo"</div>
+      <div class="info-row">
+        <div class="info-item"><strong>GVHD:</strong> ThS. Nguyễn Tuấn Anh</div>
+        <div class="info-item"><strong>Sinh viên:</strong> Trần An</div>
+        <div class="info-item"><strong>MSSV:</strong> 2022600916</div>
+      </div>
+    </div>
+
+    <!-- INTRO -->
+    <div>
+      <div class="sec-title">📌 Giới thiệu hệ thống</div>
+      <div class="card">
+        <p class="intro-text">
+          <strong>TalentBridge</strong> là nền tảng tuyển dụng trực tuyến hiện đại, kết nối <strong>Ứng viên</strong> và <strong>Nhà tuyển dụng</strong> thông qua giao diện thân thiện và thông minh. Hệ thống tích hợp <strong>Google Gemini AI</strong> để thực hiện phân tích CV tự động, sinh bộ câu hỏi phỏng vấn chuyên sâu theo từng vị trí, và hỗ trợ tìm việc qua chatbot AI có khả năng truy vấn cơ sở dữ liệu nội bộ (Function Calling). Hệ thống được xây dựng theo kiến trúc phân tầng Domain-Driven, bảo mật JWT, thanh toán trực tuyến qua <strong>VNPay</strong>, và sử dụng <strong>SSE Streaming</strong> để truyền tải kết quả AI theo thời gian thực.
+        </p>
+      </div>
+    </div>
+
+    <!-- 2 COLUMNS -->
+    <div class="two-col">
+
+      <!-- LEFT COLUMN -->
+      <div class="col">
+
+        <!-- TECH STACK -->
+        <div>
+          <div class="sec-title">⚙️ Công nghệ sử dụng</div>
+          <div class="card">
+            <div class="tech-list">
+              <div class="tech-row">
+                <div class="tech-label">Backend</div>
+                <div class="tech-badges">
+                  <span class="badge">Java 21</span>
+                  <span class="badge">Spring Boot 3</span>
+                  <span class="badge">Spring AI</span>
+                  <span class="badge">Spring Security</span>
+                  <span class="badge">JWT</span>
+                </div>
+              </div>
+              <div class="tech-row">
+                <div class="tech-label">Frontend</div>
+                <div class="tech-badges">
+                  <span class="badge green">React 18</span>
+                  <span class="badge green">TypeScript</span>
+                  <span class="badge green">Vite</span>
+                  <span class="badge green">TailwindCSS</span>
+                  <span class="badge green">ShadCN UI</span>
+                </div>
+              </div>
+              <div class="tech-row">
+                <div class="tech-label">Database</div>
+                <div class="tech-badges">
+                  <span class="badge gray">MySQL</span>
+                  <span class="badge red">Redis</span>
+                  <span class="badge gray">Flyway</span>
+                </div>
+              </div>
+              <div class="tech-row">
+                <div class="tech-label">AI</div>
+                <div class="tech-badges">
+                  <span class="badge gold">Google Gemini</span>
+                  <span class="badge gold">Function Calling</span>
+                  <span class="badge gold">SSE Streaming</span>
+                </div>
+              </div>
+              <div class="tech-row">
+                <div class="tech-label">Khác</div>
+                <div class="tech-badges">
+                  <span class="badge gray">VNPay</span>
+                  <span class="badge gray">Swagger</span>
+                  <span class="badge gray">Docker</span>
+                  <span class="badge gray">Cron Job</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ARCHITECTURE -->
+        <div>
+          <div class="sec-title">🏗️ Kiến trúc hệ thống</div>
+          <div class="card">
+            <div class="arch-diagram">
+              <div class="arch-row">
+                <div class="arch-box gold">React + TypeScript</div>
+              </div>
+              <div class="arch-label">REST API + SSE Streaming (JWT Auth)</div>
+              <div class="arch-arrow">↕</div>
+              <div class="arch-row">
+                <div class="arch-box">Spring Boot 3 Backend</div>
+              </div>
+              <div class="arch-arrow">↓</div>
+              <div class="arch-row">
+                <div class="arch-box gray">MySQL</div>
+                <div class="arch-box red">Redis Cache</div>
+                <div class="arch-box gold" style="color:#1a1a1a">Gemini AI</div>
+                <div class="arch-box orange">VNPay</div>
+              </div>
+              <div class="arch-label">Flyway Migration · SpringDoc OpenAPI · Actuator + Prometheus</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESULTS -->
+        <div>
+          <div class="sec-title">✅ Kết quả đạt được</div>
+          <div class="card">
+            <ul class="result-list">
+              <li><span class="check">✔</span>3 nhóm người dùng với phân quyền RBAC độc lập</li>
+              <li><span class="check">✔</span>AI phân tích CV tự động, cache thông minh vào DB</li>
+              <li><span class="check">✔</span>AI sinh câu hỏi phỏng vấn theo Job Level &amp; Tech Stack</li>
+              <li><span class="check">✔</span>Chat AI với Function Calling truy vấn DB nội bộ</li>
+              <li><span class="check">✔</span>SSE Streaming — phản hồi AI real-time từng ký tự</li>
+              <li><span class="check">✔</span>Thanh toán trực tuyến VNPay tích hợp hoàn chỉnh</li>
+              <li><span class="check">✔</span>Gửi email việc làm tự động bằng Cron Job</li>
+              <li><span class="check">✔</span>Thông báo tự động khi trạng thái hồ sơ thay đổi</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="col">
+
+        <!-- FEATURES -->
+        <div>
+          <div class="sec-title">🚀 Chức năng chính</div>
+          <div class="card">
+
+            <div class="feature-group">
+              <div class="feature-group-title">🧑 Ứng viên</div>
+              <ul class="feature-list">
+                <li>Đăng ký / Đăng nhập / Đặt lại mật khẩu</li>
+                <li>Tìm kiếm &amp; lọc việc làm theo nhiều tiêu chí</li>
+                <li>Nộp CV (upload mới hoặc tái sử dụng CV cũ)</li>
+                <li>AI phân tích CV trước khi nộp (SSE Streaming)</li>
+                <li>Theo dõi trạng thái hồ sơ: PENDING → REVIEWING → APPROVED / REJECTED</li>
+                <li>Rút hồ sơ đã nộp</li>
+                <li>Đăng ký nhận email thông báo việc làm theo kỹ năng</li>
+                <li>Chat AI tìm việc thông minh (đa phiên, lịch sử chat)</li>
+                <li>Xem danh sách công ty &amp; chi tiết công ty</li>
+              </ul>
+            </div>
+
+            <div class="feature-group">
+              <div class="feature-group-title">🏢 Nhà tuyển dụng</div>
+              <ul class="feature-list">
+                <li>Đăng &amp; quản lý tin tuyển dụng (CRUD)</li>
+                <li>Quản lý thông tin công ty &amp; thành viên</li>
+                <li>Thanh toán VNPay để mở khóa xem ứng viên</li>
+                <li>Xem hồ sơ &amp; AI phân tích CV ứng viên</li>
+                <li>Cập nhật trạng thái hồ sơ</li>
+                <li><strong>AI sinh câu hỏi phỏng vấn</strong> theo Job (SSE Streaming)</li>
+                <li>Thống kê hồ sơ theo trạng thái</li>
+                <li>Nhận thông báo khi có CV mới (polling 30s)</li>
+              </ul>
+            </div>
+
+            <div class="feature-group">
+              <div class="feature-group-title">🛡️ Quản trị viên</div>
+              <ul class="feature-list">
+                <li>Dashboard thống kê tổng quan hệ thống</li>
+                <li>Quản lý User / Công ty / Job / Hồ sơ toàn hệ thống</li>
+                <li>Phân quyền Role &amp; Permission (RBAC)</li>
+                <li>Xem báo cáo &amp; phân tích dữ liệu</li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SCREENSHOTS -->
+        <div>
+          <div class="sec-title">🖥️ Giao diện hệ thống</div>
+          <div class="card">
+            <div class="screenshots">
+              <div class="screenshot-box">
+                <div class="ss-icon">🏠</div>
+                <div class="ss-label">Trang chủ</div>
+              </div>
+              <div class="screenshot-box">
+                <div class="ss-icon">💼</div>
+                <div class="ss-label">Danh sách<br>việc làm</div>
+              </div>
+              <div class="screenshot-box">
+                <div class="ss-icon">🤖</div>
+                <div class="ss-label">AI phân tích CV</div>
+              </div>
+              <div class="screenshot-box">
+                <div class="ss-icon">💬</div>
+                <div class="ss-label">Chat AI<br>tìm việc</div>
+              </div>
+              <div class="screenshot-box">
+                <div class="ss-icon">📋</div>
+                <div class="ss-label">Quản lý<br>hồ sơ</div>
+              </div>
+              <div class="screenshot-box">
+                <div class="ss-icon">❓</div>
+                <div class="ss-label">Câu hỏi<br>phỏng vấn AI</div>
+              </div>
+              <div class="screenshot-box">
+                <div class="ss-icon">💳</div>
+                <div class="ss-label">Thanh toán<br>VNPay</div>
+              </div>
+              <div class="screenshot-box">
+                <div class="ss-icon">📊</div>
+                <div class="ss-label">Dashboard<br>Admin</div>
+              </div>
+            </div>
+            <p style="font-size:9px;color:#94a3b8;text-align:center;margin-top:6px;font-style:italic;">* Thay placeholder bằng ảnh chụp màn hình thực tế của hệ thống</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- end body -->
+
+  <!-- FOOTER -->
+  <div class="footer">www.sict.haui.edu.vn</div>
+
+</div>
+</body>
+</html>
